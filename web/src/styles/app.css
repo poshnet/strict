@@ -1482,3 +1482,37 @@ body { font-size: 16px; }
   .tca.home .tca-m { flex: 1 1 auto; min-width: 0; max-width: none; white-space: nowrap; }
 }
 .dh-words p { max-width: 620px; line-height: 1.55; }
+
+/* "How is this possible?" v3: proof, not paragraphs (components/HowPossible.tsx) */
+.hp-proof { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.hp-proof > li { display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--line-2); border-radius: 18px; background: var(--panel); min-width: 0; }
+.hp-t { display: flex; gap: 12px; align-items: flex-start; }
+.hp-t > span:last-child { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hp-t b { font-size: 18px; letter-spacing: -0.02em; }
+.hp-t span span { font-size: 14px; color: var(--muted); line-height: 1.45; }
+.hp-ix { display: flex; flex-wrap: wrap; gap: 6px; }
+.hp-ix span { height: 30px; display: inline-flex; align-items: center; padding: 0 10px; border-radius: 8px; background: var(--deep); border: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
+.hp-ix span.adm { color: var(--muted); border-style: dashed; }
+.hp-ix span.no { color: var(--red); background: var(--red-bg); border-color: rgba(255, 92, 106, 0.35); text-decoration: line-through; text-decoration-thickness: 2px; }
+.hp-note { margin: 0; font-size: 12.5px; color: var(--faint); }
+.hp-live { border: 1px solid var(--line); border-radius: 12px; background: var(--code-bg); padding: 12px 14px; }
+.hp-live-h { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.dot.g { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.hp-live dl { margin: 10px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+.hp-live dt { font-size: 12px; color: var(--faint); }
+.hp-live dd { margin: 2px 0 0; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hp-more { font-size: 14px; color: var(--accent-soft); display: inline-flex; align-items: center; gap: 6px; }
+/* compact, in the intro */
+.hp-proof.c { gap: 8px; margin-top: 10px; }
+.hp-proof.c > li { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; row-gap: 8px; align-items: center; padding: 12px; border-radius: 12px; background: var(--deep); }
+.hp-proof.c > li > b { font-size: 13.5px; }
+.hp-proof.c > li > :not(.hp-n):not(b) { grid-column: 1 / -1; }
+.hp-cl { font-family: var(--mono); font-size: 11.5px; border: 1px solid var(--line); border-radius: 8px; background: var(--code-bg); padding: 6px 8px 6px 0; overflow: hidden; }
+.hp-cl > i { width: 36px; }
+.hp-live.c { padding: 8px 10px; }
+.hp-live.c dl { gap: 4px 10px; margin-top: 6px; }
+.hp-live.c dd { font-size: 12px; }
+.hp-proof.c .hp-ix { gap: 4px; }
+.hp-proof.c .hp-ix span { height: 24px; font-size: 11.5px; padding: 0 7px; }
+@media (max-width: 760px) { .hp-proof, .hp-proof.c { grid-template-columns: minmax(0, 1fr); } }
+.hp-proof.c > li { align-content: start; }

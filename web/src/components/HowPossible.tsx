@@ -1,56 +1,90 @@
-// "How is this possible?": the plain-English answer to "this sounds too good", in four steps, for people who don't read
-// Rust. The intro opens it in place; /rules shows it in full. Every claim maps to the program: the full supply has to
-// sit in the coin's vault with no mint or freeze key (create), there's no instruction that edits a coin's rules, and buy
-// checks them before any token moves. What we still hold (the upgrade key) is read live, not assumed.
+// "How is this possible?", answered with the program itself instead of paragraphs: the line in `create` that writes a
+// coin's rules into its own account, every instruction the program has (none edits a live coin's rules), the checks
+// that nobody can mint more (so every buy goes through the program), and the program as Solana reports it, read in the
+// visitor's browser. The intro shows it compact; /rules#how shows the full code with links to the exact lines.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import source from '../lib/source.json';
+import { useConfig } from '../lib/data';
+import { short } from '../lib/format';
+import { CodeBlock, CodeLine, type Block } from './RuleCode';
 import { useProgram } from './Trust';
 import { I } from './ui';
 
-const STEPS = [
-  { t: 'The rules are part of the coin.', d: "The launch is one transaction: it creates the coin and writes its rules into the coin's own account on Solana. Only the strict program can write to that account." },
-  { t: "There's no edit button.", d: "The program has no instruction that changes a coin's rules after launch. Not for the creator, not for us. Its whole list of instructions is public." },
-  { t: 'Every buy goes through the program.', d: "Until it bonds, every token sits in the program's vault and nobody can mint more, so the program is the only seller. It checks the buyer first; if a rule says no, the whole transaction fails and the buyer keeps their SOL." },
-  { t: 'You can check it yourself.', d: "Your browser reads any coin's rules straight from Solana, not from our server. Every stopped buy is a failed transaction anyone can look up." },
-];
+const store = (source as Record<string, Block[]>).howStore[0];
+const ixs = (source as Record<string, Block[]>).howIx[0];
+const mint = (source as Record<string, Block[]>).howMint;
+/** the program's instructions, as the dispatch names them */
+const NAMES = [...ixs.code.matchAll(/IX_\w+ => (\w+)\(/g)].map((m) => m[1]);
+const ADMIN = new Set(['initialize', 'set_params', 'set_authority']);
+/** the line of `create` that writes the rules (with its real line number) */
+const ruleLine = (() => { const k = store.code.split('\n').findIndex((l) => l.includes('no_dev_buy')); return { n: store.start + k, line: store.code.split('\n')[k] }; })();
 
-/** what we still control, read live: the program's upgrade key */
-function StillHeld() {
-  const s = useProgram().data;
-  if (s?.deployed && !s.upgradeable) return <p className="hp-held green-t"><I.check size={13} />The program is frozen: nobody, us included, can change it. Read live from Solana.</p>;
+function Chips() {
   return (
-    <p className="hp-held"><i className="dot" /><span><b>What we still hold:</b> the program's upgrade key, for now. We remove it after launch, and every coin page shows that live. Rules end when a coin bonds: on Raydium it trades like any token.</span></p>
+    <div className="hp-ix">
+      {NAMES.map((n) => <span key={n} className={`mono${ADMIN.has(n) ? ' adm' : ''}`}>{n}</span>)}
+      <span className="mono no" title="There is no such instruction">edit_rules</span>
+    </div>
   );
 }
 
-export function HowPossible({ compact }: { compact?: boolean }) {
-  const [open, setOpen] = useState(!compact);
-  const body = (
-    <>
-      <ol className="hp-steps">
-        {STEPS.map((s, i) => (
-          <li key={s.t}><span className="hp-n mono">{i + 1}</span><span><b>{s.t}</b><span>{s.d}</span></span></li>
-        ))}
-      </ol>
-      <StillHeld />
-    </>
+function Live({ compact }: { compact?: boolean }) {
+  const { data: cfg } = useConfig();
+  const p = useProgram();
+  const s = p.data;
+  if (!cfg) return null;
+  const rows: [string, string, string?][] = s ? [
+    ['Program', short(cfg.programId, 5)],
+    ['On mainnet', s.deployed ? 'yes' : 'not yet', s.deployed ? 'g' : 'a'],
+    ['Size', s.bytes ? `${Math.round(s.bytes / 1024)} KB` : '–'],
+    ['Upgrades', !s.deployed ? '–' : s.upgradeable ? `${short(s.authority || '', 4)} (until frozen)` : 'frozen for good', s.upgradeable ? 'a' : 'g'],
+  ] : [];
+  return (
+    <div className={`hp-live${compact ? ' c' : ''}`}>
+      <span className="hp-live-h"><i className={p.isLoading ? 'dot' : 'dot g'} />{p.isLoading ? 'Reading Solana from your browser…' : 'Read from Solana by your browser, just now'}</span>
+      {rows.length > 0 && <dl>{rows.map(([k, v, c]) => <div key={k}><dt>{k}</dt><dd className={`mono${c === 'g' ? ' green-t' : c === 'a' ? ' amber-t' : ''}`}>{v}</dd></div>)}</dl>}
+    </div>
   );
+}
+
+const STEPS = [
+  { t: 'The rules are written into the coin.', d: 'In the launch transaction, into an account only the program can write to.' },
+  { t: 'There’s no edit button.', d: 'Every instruction the program has. None changes a live coin’s rules.' },
+  { t: 'Nobody can mint more.', d: 'The whole supply sits in the coin’s vault, so every buy passes the program’s checks.' },
+  { t: 'Check it yourself.', d: 'Your browser asks Solana directly, not our server.' },
+];
+
+export function HowPossible({ compact }: { compact?: boolean }) {
+  const { data: cfg } = useConfig();
+  const [open, setOpen] = useState(!compact);
   if (compact) return (
     <div className={`hp compact${open ? ' open' : ''}`}>
       <button type="button" className="hp-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <I.info size={14} />How is this possible?<span className="hp-chev" aria-hidden>{open ? '−' : '+'}</span>
+        <I.code size={14} />How is this possible? See the code<span className="hp-chev" aria-hidden>{open ? '−' : '+'}</span>
       </button>
-      {open && <div className="hp-body">{body}</div>}
+      {open && (
+        <ol className="hp-proof c">
+          <li><span className="hp-n mono">1</span><b>{STEPS[0].t}</b><CodeLine n={ruleLine.n} line={ruleLine.line} js={false} className="hp-cl" /></li>
+          <li><span className="hp-n mono">2</span><b>{STEPS[1].t}</b><Chips /></li>
+          <li><span className="hp-n mono">3</span><b>{STEPS[2].t}</b><CodeLine n={mint[0].start} line={mint[0].code} js={false} className="hp-cl" /></li>
+          <li><span className="hp-n mono">4</span><b>{STEPS[3].t}</b><Live compact /></li>
+        </ol>
+      )}
     </div>
   );
   return (
     <section className="hp section" id="how">
       <div className="sec-head"><div>
         <h2>How is this possible?</h2>
-        <p>No magic and no promises. It's the same building block every launchpad's bonding curve already uses; strict.fun puts checks in front of the trade.</p>
+        <p>Don’t take our word for it. Here’s the program.</p>
       </div></div>
-      {body}
-      <Link to="/proof" className="small">How to check all of this yourself →</Link>
+      <ol className="hp-proof">
+        <li><div className="hp-t"><span className="hp-n mono">1</span><span><b>{STEPS[0].t}</b><span>{STEPS[0].d}</span></span></div><CodeBlock block={store} sourceUrl={cfg?.sourceUrl} /></li>
+        <li><div className="hp-t"><span className="hp-n mono">2</span><span><b>{STEPS[1].t}</b><span>{STEPS[1].d}</span></span></div><Chips /><p className="hp-note">The three marked admin only touch settings for coins launched later, never a live coin.</p><CodeBlock block={ixs} sourceUrl={cfg?.sourceUrl} /></li>
+        <li><div className="hp-t"><span className="hp-n mono">3</span><span><b>{STEPS[2].t}</b><span>{STEPS[2].d}</span></span></div>{mint.map((b) => <CodeBlock key={b.start} block={b} sourceUrl={cfg?.sourceUrl} />)}</li>
+        <li><div className="hp-t"><span className="hp-n mono">4</span><span><b>{STEPS[3].t}</b><span>{STEPS[3].d}</span></span></div><Live /><Link to="/proof" className="hp-more">Every check, on the Proof page <I.arrow size={14} /></Link></li>
+      </ol>
     </section>
   );
 }

@@ -74,5 +74,31 @@
    "start": 239,
    "code": "    ok(!l.sealed, E::Sealed)?;"
   }
+ ],
+ "howStore": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 355,
+   "code": "    let c = Curve {\n        mint: *mint.key, creator: *creator.key, virtual_sol: p.virtual_sol, virtual_token: p.virtual_token, real_sol: 0, real_token: p.real_token,\n        token_supply: p.token_supply, creator_fees: 0, fee_bps: p.fee_bps, creator_fee_bps: p.creator_fee_bps, migration_fee: p.migration_fee,\n        migration_reserve: p.migration_reserve, blocked, list_hash, complete: false, migrated: false, bought_back: false, pool: Pubkey::default(),\n        created_at: now()?, bump, vault_bump, list_bump, shield_kind, shield_secs, no_dev_buy, no_bundles, created_slot: slot()?, max_wallet_bps, pass,\n    };"
+  }
+ ],
+ "howIx": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 90,
+   "code": "    match d {\n        IX_BUY => buy(a, r.u64()?, r.u64()?),\n        IX_SELL => sell(a, r.u64()?, r.u64()?),\n        IX_ADD_TO_LIST => add_to_list(a, args),\n        IX_OPEN_LIST => open_list(a),\n        IX_CREATE => create(a, &mut r),\n        IX_CLAIM => claim(a),\n        IX_MIGRATE => migrate(a),\n        IX_BUYBACK => buyback(a, r.u64()?),\n        IX_CLOSE_LIST => close_list(a),\n        IX_INITIALIZE => initialize(a, &mut r),\n        IX_SET_PARAMS => set_params(a, &mut r),\n        IX_SET_AUTHORITY => set_authority(a, r.key()?),\n        _ => Err(ProgramError::InvalidInstructionData),\n    }"
+  }
+ ],
+ "howMint": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 311,
+   "code": "    ok(m.no_mint_authority && m.no_freeze_authority, E::MintAuthority)?;"
+  },
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 324,
+   "code": "    ok(t.amount == g.p.token_supply, E::MintSupply)?;"
+  }
  ]
 }

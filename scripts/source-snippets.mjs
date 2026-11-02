@@ -53,6 +53,11 @@ const out = {
   // the lock: create seals the list, and nothing can write to a sealed one
   lock: [rs(['fn create(a: &[AccountInfo]', 'if list.owner == &crate::ID && !list.data_is_empty() {'], { comments: false }),
     rs(['fn add_to_list(a: &[AccountInfo]', 'ok(!l.sealed, E::Sealed)?;'], { oneLine: true, comments: false })],
+  // "How is this possible?": the rules written into the coin, every instruction the program has, and nobody minting more
+  howStore: [rs(['fn create(a: &[AccountInfo]', 'let c = Curve {'], { comments: false })],
+  howIx: [rs('match d {', { comments: false })],
+  howMint: [rs('ok(m.no_mint_authority && m.no_freeze_authority, E::MintAuthority)?;', { oneLine: true, comments: false }),
+    rs('ok(t.amount == g.p.token_supply, E::MintSupply)?;', { oneLine: true, comments: false })],
 };
 writeFileSync(new URL('../web/src/lib/source.json', import.meta.url), `${JSON.stringify(out, null, 1)}\n`);
 console.log(Object.entries(out).map(([k, v]) => `${k}: ${v.map((b) => `${b.file.split('/').pop()}:${b.start}`).join(', ')}`).join('\n'));

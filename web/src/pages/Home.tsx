@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Engine } from '../components/Engine';
+import { Explainer } from '../components/Explainer';
+import { TokenCA } from '../components/TokenCA';
 import { Avatar, Empty, I, RuleIcon } from '../components/ui';
 import { api, type Coin, type RuleId } from '../lib/api';
 import { useUsd } from '../lib/data';
@@ -44,13 +46,13 @@ function DashHead() {
   const stats = useQuery({ queryKey: ['stats'], queryFn: api.stats, refetchInterval: 20_000 });
   const s = stats.data;
   const n = (v: number | undefined | null, d = 0) => (v == null ? '—' : v.toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d }));
-  // the hero's light: a slow loop on wide screens (a still on phones, so they don't download it)
-  const [wide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 781px)').matches);
+  // wide screens get the explainer in a window on the right, over the still light; phones get the light alone (the video
+  // is on /rules for them)
+  const [wide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1101px)').matches);
   return (
     <header className="dash-head">
-      <div className="dh-bg" aria-hidden>
-        {wide ? <video src="/assets/hero/edge.mp4" poster="/assets/hero/edge.jpg" autoPlay muted loop playsInline /> : <img src="/assets/hero/edge.jpg" alt="" />}
-      </div>
+      <div className="dh-bg" aria-hidden><img src="/assets/hero/edge.jpg" alt="" /></div>
+      {wide && <Explainer className="dh-video" />}
       <div className="dh-words">
         <h1>Pick the rules.<br /><span className="h1-sub">The code enforces them.</span></h1>
         <p>Every coin launches with rules the program checks on every buy.</p>
@@ -60,6 +62,7 @@ function DashHead() {
         <div><dt>Buys stopped</dt><dd className="tnum red">{n(s?.stopped ?? s?.tries)}</dd></div>
         <div><dt>Rules a coin</dt><dd className="tnum">{n(s?.avgRules, 1)}</dd></div>
       </dl>
+      <TokenCA where="home" />
     </header>
   );
 }

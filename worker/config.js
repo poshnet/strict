@@ -6,6 +6,10 @@ const DEFAULTS = {
   SITE_NAME: 'strict.fun',
   SITE_URL: 'https://strict.fun',
   X_HANDLE: 'strictdotfun',
+  // our own coin, launched elsewhere (Raydium LaunchLab): its contract address and ticker show in the top bar and on the
+  // home page once set (blank: nothing shows)
+  TOKEN_MINT: '',
+  TOKEN_SYMBOL: '',
   // the public repo the "Show the code" panels link to (blank: no link until it's published)
   SOURCE_URL: '',
   // the RPC the browser checks coins and the program against, independently of this worker (blank: public mainnet
@@ -43,6 +47,8 @@ export function cfg(env = {}) {
     siteName: String(v('SITE_NAME')),
     siteUrl: String(v('SITE_URL')).replace(/\/$/, ''),
     xHandle: String(v('X_HANDLE')),
+    tokenMint: String(v('TOKEN_MINT') || '').trim() || null,
+    tokenSymbol: String(v('TOKEN_SYMBOL') || '').trim().replace(/^\$/, '').toUpperCase() || null,
     sourceUrl: String(v('SOURCE_URL') || '').replace(/\/$/, '') || null,
     publicRpc: String(v('PUBLIC_RPC') || '').trim() || null,
     rpcUrl: v('RPC_URL'),
@@ -74,6 +80,7 @@ export function publicConfig(env) {
   const p = c.params;
   return {
     siteName: c.siteName, siteUrl: c.siteUrl, xHandle: c.xHandle, sourceUrl: c.sourceUrl, publicRpc: c.publicRpc,
+    tokenMint: c.tokenMint, tokenSymbol: c.tokenSymbol,
     programId: PROGRAM_ID.toBase58(),
     launches: c.launches && !!c.feeWallet,
     listMax: c.listMax,

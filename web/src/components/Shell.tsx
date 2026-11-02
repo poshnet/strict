@@ -10,6 +10,7 @@ import { useWallet } from '../lib/wallet';
 import { Intro, introSeen } from './Intro';
 import { useProgram } from './Trust';
 import { Avatar, Fol, I, Mark, Modal, Spinner, Wordmark } from './ui';
+import { TokenCA } from './TokenCA';
 
 const LINKS = [
   { to: '/', label: 'Board', end: true, icon: I.grid },
@@ -65,6 +66,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <Link to="/" className="top-mark" aria-label="strict.fun home"><Mark size={28} /></Link>
           <button className="top-search" onClick={() => setSearch(true)}><I.search size={15} /><span>Search coins, KOLs or a wallet</span><kbd>⌘K</kbd></button>
           <div className="top-right">
+            <TokenCA />
             <Link to="/launch" className="btn primary s top-launch"><I.plus size={15} /><span className="hide-s">Launch</span></Link>
             <WalletButton />
           </div>

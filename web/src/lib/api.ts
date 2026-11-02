@@ -58,6 +58,8 @@ export type Config = {
   rulesDefault?: { kols: boolean; snipers: boolean; dev: boolean; bundles: boolean; maxWalletBps: number; vamps: boolean };
   shieldDefault?: { kind: 'linear' | 'exponential'; secs: number };
   kolCount?: number; sourceUrl?: string | null; testCount?: number; e2eCount?: number;
+  /** our own coin (launched on LaunchLab), shown once set */
+  tokenMint?: string | null; tokenSymbol?: string | null;
 };
 export type Stats = { coins: number; bonded: number; kolBounces: number; listed: number; wallets: number; volumeSol: number; tries: number; kols: number; stopped?: number; avgRules?: number };
 export type FeedEvent = { kind: 'launch' | 'bounce' | 'stop' | 'bond' | 'buy'; ts: number; coin: { mint: string; name: string; symbol: string; image: string | null }; wallet?: string; kol?: MiniKol | null; sol?: number; blocked?: number; kols?: number; rule?: RuleId };

@@ -12,10 +12,10 @@
     "directory": "web/dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    // pages go through the worker (so /coin/<mint> and /kol/<id> unfurl as what they point at); so do the built files
-    // and KOL pictures while COMING_SOON is on, so the gate (worker/soon.js) can withhold them. After launch, add
-    // "!/assets/*" and "!/kols/*" back to serve them straight from the assets.
-    "run_worker_first": ["/*", "!/assets/hero/*", "!/favicon.svg", "!/og.jpg", "!/icon-512.png", "!/apple-touch-icon.png"]
+    // pages go through the worker (so /coin/<mint> and /kol/<id> unfurl as what they point at); built files and KOL
+    // pictures are served straight from the assets. To turn COMING_SOON back on, drop "!/assets/*" and "!/kols/*" too,
+    // so the gate (worker/soon.js) can withhold them.
+    "run_worker_first": ["/*", "!/assets/*", "!/kols/*", "!/favicon.svg", "!/og.jpg", "!/icon-512.png", "!/apple-touch-icon.png"]
   },
   // D1 "strict" (created 2026-10-31)
   "d1_databases": [
@@ -39,7 +39,7 @@
     "LAUNCHES": "0",
     // "1": every page is the coming-soon page and the API is closed, except with the preview link (worker/soon.js;
     // the PREVIEW_KEY secret is in keys/PREVIEW_KEY.txt)
-    "COMING_SOON": "1",
+    "COMING_SOON": "0",
     // the public repo the site's code panels link to (open-sourced 2026-11-02)
     "SOURCE_URL": "https://github.com/poshnet/strict",
     "CRANK": "1",

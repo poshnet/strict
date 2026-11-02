@@ -156,11 +156,14 @@ The program builds with Solana 1.18.26 / platform-tools 1.41 (`Cargo.lock` is pi
    change it" is true of every coin's rules (nothing writes to a sealed list or a created curve's rules) but the
    program itself could be upgraded; the site must not claim "frozen" or "no upgrade key" before this step.
 
-**Coming soon (on since 2026-10-31):** with `COMING_SOON: "1"` every page, on strict.fun and the workers.dev address, is
+**Coming soon (on 2026-10-31, off since 2026-11-02; launches still off):** with `COMING_SOON: "1"` every page, on strict.fun and the workers.dev address, is
 one "soon" page (`worker/soon.js`), the API answers 503, and the app's files, KOL pictures and metadata are withheld.
 The team's way in is the preview link `https://strict.fun/?preview=<keys/PREVIEW_KEY.txt>`: it sets a cookie for 30
 days. The admin API and the cron keep working. On launch day: set `COMING_SOON` to `"0"` (or delete it), add `"!/assets/*"`
 and `"!/kols/*"` back to `run_worker_first`, and deploy.
+
+**Our own coin's CA:** set `TOKEN_MINT` (and `TOKEN_SYMBOL`) in `wrangler.jsonc` and deploy: a copy pill with a chart link
+shows in the top bar and on the home page (`web/src/components/TokenCA.tsx`); blank shows nothing.
 
 Admin: `POST /api/admin/run?task=index|crank|all` with header `x-admin-key`.
 

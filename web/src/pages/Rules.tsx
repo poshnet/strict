@@ -2,6 +2,7 @@
 // Then how to check all of it yourself, the audit, and what the rules can't do.
 import { Link } from 'react-router-dom';
 import { CodeTour, Pipeline } from '../components/Engine';
+import { Explainer } from '../components/Explainer';
 import { HowPossible } from '../components/HowPossible';
 import { LockBanner } from '../components/RuleCard';
 import { RuleCode } from '../components/RuleCode';
@@ -20,6 +21,8 @@ export default function Rules() {
         <h1>The rules, in plain English.</h1>
         <p className="lede">Six rules a creator can pick. What each one stops, how it works, and the code that does it.</p>
       </header>
+
+      <Explainer className="rules-video" />
 
       <LockBanner />
 

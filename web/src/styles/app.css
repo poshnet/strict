@@ -1447,3 +1447,37 @@ body { font-size: 16px; }
   /* on a phone the light sits low, behind the numbers, never behind the headline */
   .dh-bg { top: auto; bottom: -26px; right: -16px; width: 92%; height: 58%; opacity: 0.32; }
 }
+
+/* the explainer video, in a quiet window (components/Explainer.tsx): home header on wide screens, /rules for everyone */
+.xpl { margin: 0; border-radius: 20px; overflow: hidden; background: #141416; border: 1px solid var(--line); box-shadow: 0 40px 100px -40px rgba(var(--accent-rgb), 0.32), 0 24px 60px rgba(0, 0, 0, 0.5); }
+.xpl-bar { display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-bottom: 1px solid var(--line-2); background: #111113; }
+.xpl-bar i { width: 10px; height: 10px; border-radius: 50%; background: #2E2E33; }
+.xpl-bar i:first-child { background: var(--accent); }
+.xpl-bar span { margin-left: 8px; font-size: 12px; color: var(--muted); }
+.xpl-bar b { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--faint); }
+.xpl video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #0A0A0B; }
+.rules-video { margin: 8px 0 28px; max-width: 980px; }
+@media (min-width: 1101px) {
+  .dash-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 540px); grid-template-areas: 'words video' 'kpis video' 'ca video'; align-items: end; column-gap: 48px; row-gap: 26px; }
+  .dash-head .dh-words { grid-area: words; } .dash-head .kpis { grid-area: kpis; } .dash-head .tca.home { grid-area: ca; justify-self: start; } .dh-video { grid-area: video; align-self: center; }
+  .dash-head .dh-words h1 { font-size: 54px; }
+}
+
+/* our own coin's contract address (components/TokenCA.tsx) */
+.tca { display: inline-flex; align-items: center; gap: 6px; }
+.tca-copy { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border-radius: 11px; border: 1px solid var(--accent-line-2); background: var(--accent-bg); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+.tca-copy:hover { border-color: var(--accent); }
+.tca-copy svg { color: var(--accent-soft); }
+.tca-t { font-weight: 800; color: var(--accent-soft); letter-spacing: -0.01em; }
+.tca-k { font-size: 11px; font-weight: 700; color: var(--faint); }
+.tca-m { font-size: 13px; color: var(--ink-2); }
+.tca-chart { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; padding: 0 6px; }
+.tca-chart:hover { color: var(--ink); }
+.tca.home .tca-copy { height: 44px; }
+.tca.home .tca-m { overflow: hidden; text-overflow: ellipsis; max-width: 52vw; }
+@media (max-width: 1100px) { .tca.top { display: none; } }
+@media (max-width: 780px) {
+  .tca.home { display: flex; width: 100%; min-width: 0; }
+  .tca.home .tca-copy { flex: 1 1 auto; min-width: 0; }
+  .tca.home .tca-m { flex: 1 1 auto; min-width: 0; max-width: none; white-space: nowrap; }
+}

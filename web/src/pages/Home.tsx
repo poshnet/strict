@@ -55,12 +55,12 @@ function DashHead() {
       {wide && <Explainer className="dh-video" />}
       <div className="dh-words">
         <h1>Pick the rules.<br /><span className="h1-sub">The code enforces them.</span></h1>
-        <p>Every coin launches with rules the program checks on every buy.</p>
+        <p>Creators pick the rules at launch: no KOLs, no snipers, no dev buys, no bundles, a max wallet. They're locked on chain and checked by the program on every buy, until the coin bonds into Raydium with its LP burned.</p>
       </div>
       <dl className="kpis">
         <div><dt>Strict coins</dt><dd className="tnum">{n(s?.coins)}</dd></div>
         <div><dt>Buys stopped</dt><dd className="tnum red">{n(s?.stopped ?? s?.tries)}</dd></div>
-        <div><dt>Rules a coin</dt><dd className="tnum">{n(s?.avgRules, 1)}</dd></div>
+        <div><dt>Rules a coin</dt><dd className="tnum">{s?.coins ? n(s.avgRules, 1) : '—'}</dd></div>
       </dl>
       <TokenCA where="home" />
     </header>

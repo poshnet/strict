@@ -1481,3 +1481,4 @@ body { font-size: 16px; }
   .tca.home .tca-copy { flex: 1 1 auto; min-width: 0; }
   .tca.home .tca-m { flex: 1 1 auto; min-width: 0; max-width: none; white-space: nowrap; }
 }
+.dh-words p { max-width: 620px; line-height: 1.55; }

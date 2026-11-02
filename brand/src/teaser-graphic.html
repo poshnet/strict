@@ -1,0 +1,155 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="code.js"></script><script src="icons.js"></script>
+<style>
+  /* The teaser graphic: everything strict.fun does, in one bold card. 1600 x 900 (X's 16:9 card); #square makes it
+     1200 x 1200. Rendered at 2x by scripts/render-brand.mjs graphic. */
+  .stage { width: 1600px; height: 900px; }
+  .sq .stage { width: 1200px; height: 1200px; }
+  .grid-bg { position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 56px 56px; -webkit-mask-image: radial-gradient(ellipse 70% 70% at 25% 20%, #000 20%, transparent 75%); }
+  .code-bg { right: -40px; top: -6px; font-size: 13px; color: #16161A; -webkit-mask-image: linear-gradient(90deg, transparent, #000 35%, #000 80%, transparent); }
+  .g1 { width: 760px; height: 560px; left: -160px; top: -220px; background: rgba(255, 138, 31, 0.16); }
+  .g2 { width: 620px; height: 520px; right: -120px; bottom: -220px; background: rgba(255, 138, 31, 0.09); }
+
+  .wrap { position: absolute; inset: 64px 72px; display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr); gap: 56px; }
+  .sq .wrap { inset: 64px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; gap: 34px; }
+  .left { display: flex; flex-direction: column; min-width: 0; }
+
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .mk { width: 52px; height: 52px; border-radius: 13px; background: #131315; border: 1px solid #26262A; display: grid; place-items: center; }
+  .brand .mk .mark { font-size: 25px; }
+  .brand .nm { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 26px; letter-spacing: -0.045em; }
+  .brand .nm span { color: var(--faint); font-weight: 600; }
+  .brand .soon { margin-left: auto; height: 34px; padding: 0 16px; font-size: 15px; letter-spacing: 0.02em; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+
+  h1 { margin: 46px 0 0; font-weight: 800; font-size: 86px; line-height: 0.98; letter-spacing: -0.055em; }
+  h1 .m { color: var(--muted); font-weight: 700; display: block; font-size: 0.7em; margin-top: 10px; letter-spacing: -0.05em; white-space: nowrap; }
+  .sq h1 { margin-top: 0; font-size: 84px; }
+  .sq h1 .m { font-size: 1em; margin-top: 0; }
+
+  /* the bad actors, crossed out */
+  .strike { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px 12px; }
+  .strike span { position: relative; display: inline-flex; align-items: center; gap: 9px; height: 46px; padding: 0 18px 0 14px; border-radius: 12px;
+    background: #251013; border: 1px solid #4A1E24; color: #FFB3BA; font-weight: 700; font-size: 21px; letter-spacing: -0.02em; }
+  .strike span::after { content: ''; position: absolute; left: 40px; right: 14px; top: 50%; height: 2.5px; background: #FF5C6A; transform: rotate(-4deg); border-radius: 2px; }
+  .strike span b { width: 20px; height: 20px; border-radius: 6px; background: #FF5C6A; color: #251013; display: grid; place-items: center; font-size: 15px; font-weight: 800; }
+
+  /* the one line of code */
+  .code { margin-top: 28px; border: 1px solid #26262A; border-radius: 14px; background: linear-gradient(180deg, #111113, #0C0C0E); overflow: hidden; }
+  .code .bar { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-bottom: 1px solid #1F1F23; background: #0F0F11;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #7A7872; }
+  .code .bar b { color: #F4F3EF; font-weight: 600; }
+  .code .bar .rs { display: inline-block; width: 9px; height: 9px; border-radius: 3px; background: #DEA584; margin-right: 8px; }
+  .code .bar .tag { font-size: 11.5px; color: #F0A776; border: 1px solid #26262A; border-radius: 999px; padding: 2px 8px; }
+  .code pre { margin: 0; padding: 12px 0 14px; font-family: 'JetBrains Mono', monospace; font-size: 18px; line-height: 30px; color: #CFCBC2; }
+  .code .ln { display: block; white-space: pre; }
+  .code .ln i { display: inline-block; width: 58px; padding-right: 16px; text-align: right; font-style: normal; color: #5E5C57; }
+  .code .ln.gap { line-height: 18px; }
+  .code .ln.gap i { color: #3E3C38; }
+  .code .ln.hot { background: rgba(255, 138, 31, 0.11); box-shadow: inset 3px 0 0 #FF8A1F; }
+  .t-kw { color: #FF9D45; } .t-fn { color: #6CC4FF; } .t-ty { color: #C7A5FF; } .t-err { color: #FF6B78; font-weight: 600; }
+  .t-op { color: #FF9D45; font-weight: 700; } .t-p { color: #8E8A82; } .t-cm { color: #8A8780; font-style: italic; }
+
+  .chips { margin-top: auto; display: flex; flex-wrap: wrap; gap: 10px; }
+  .chips .pill { height: 38px; padding: 0 15px; font-size: 15.5px; gap: 9px; }
+  .chips .ico { width: 16px; height: 16px; stroke-width: 2.2; }
+  .sq .chips { margin-top: 0; }
+
+  /* the six rules */
+  .rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 14px; align-content: stretch; }
+  .right { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .right .rules { flex: 1; }
+  .rule { display: flex; flex-direction: column; gap: 8px; padding: 18px 22px; border-radius: 16px; background: linear-gradient(180deg, #151517, #111113); border: 1px solid #2A2A2F; position: relative; overflow: hidden; }
+  .rule::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, #FF8A1F, rgba(255, 138, 31, 0)); }
+  .rule .top { display: flex; align-items: center; justify-content: space-between; }
+  .rule .ic { width: 46px; height: 46px; border-radius: 12px; background: #1E140A; border: 1px solid #3D2814; color: #FFB46E; display: grid; place-items: center; }
+  .rule .ic .ico { width: 23px; height: 23px; }
+  .rule .on { display: inline-flex; align-items: center; justify-content: flex-end; width: 46px; height: 27px; padding: 3px; box-sizing: border-box; border-radius: 999px; background: #FF8A1F; }
+  .rule .on i { width: 21px; height: 21px; border-radius: 50%; background: #fff; }
+  .rule h3 { margin: 4px 0 0; font-size: 29px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
+  .rule p { margin: 0; font-size: 16.5px; line-height: 1.4; color: #B6B3AB; }
+  .rule p b { color: #F4F3EF; font-weight: 600; }
+  .rule .where { margin-top: auto; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #FFB46E; }
+  .rule .where.site { color: #F5DD7A; }
+
+  .lock { display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 16px; border: 1px solid #4A3118; background: linear-gradient(90deg, #22160A, #141210); }
+  .lock .ic { width: 46px; height: 46px; border-radius: 12px; background: #0A0A0B; color: #FF8A1F; display: grid; place-items: center; flex: 0 0 auto; }
+  .lock .ic .ico { width: 23px; height: 23px; }
+  .lock b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
+  .lock span { font-size: 15.5px; color: #B6B3AB; }
+
+  .sq .wrap { gap: 20px; }
+  .sq .rules { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .sq .right { gap: 12px; }
+  .sq .rule { padding: 16px 20px; gap: 8px; }
+  .sq .rule .ic { width: 38px; height: 38px; border-radius: 10px; }
+  .sq .rule .ic .ico { width: 20px; height: 20px; }
+  .sq .rule h3 { font-size: 26px; }
+  .sq .rule p { font-size: 16px; }
+  .sq .bottom { display: flex; flex-direction: column; gap: 14px; }
+  .sq .strike { margin-top: 18px; }
+  .sq .strike span { height: 44px; }
+  .sq .code pre { line-height: 28px; padding: 10px 0 12px; }
+  .left .code { margin-top: auto; } /* the spare height splits above and below the code */
+  .sq .code { margin-top: 0; }
+</style></head>
+<body><div class="stage" id="stage">
+  <div class="grid-bg"></div>
+  <div class="code-bg" id="bgc"></div>
+  <div class="glow g1"></div><div class="glow g2"></div>
+  <div class="wrap" id="wrap"></div>
+</div>
+<script>
+  const sq = location.hash === '#square';
+  if (sq) document.documentElement.classList.add('sq');
+  document.getElementById('bgc').textContent = (window.CODE || '').repeat(2);
+
+  // the line that stops a KOL, as it is in the program (web/src/lib/source.json via code.js)
+  const kb = window.SNIPPETS.kols[0];
+  const lines = kb.code.split('\n');
+  const at = lines.findIndex((l) => l.includes('E::Bounced'));
+  const esc = (x) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const hl = (line) => {
+    const t = line.trim();
+    if (t.startsWith('//')) return `<span class="t-cm">${esc(line)}</span>`;
+    return esc(line)
+      .replace(/(E::\w+)/g, '<span class="t-err">$1</span>')
+      .replace(/\b(if|let|mut|fn)\b/g, '<span class="t-kw">$1</span>')
+      .replace(/\b([a-z_][a-z0-9_]*)(?=\()/g, '<span class="t-fn">$1</span>')
+      .replace(/\?/g, '<span class="t-op">?</span>');
+  };
+  // the comment, the if, and the refusal; the line between (the list's address check) is too wide here, so it's a gap
+  const pick = [at - 3, at - 2, at].filter((k) => k >= 0);
+  const pad = Math.min(...pick.map((k) => lines[k].match(/^ */)[0].length));
+  const codeHtml = pick.map((k, j) => (j && k !== pick[j - 1] + 1 ? '<span class="ln gap"><i>⋮</i></span>' : '')
+    + `<span class="ln${k === at ? ' hot' : ''}"><i>${kb.start + k}</i>${hl(lines[k].slice(pad))}</span>`).join('');
+
+  const R = [
+    ['kols', 'No KOLs', '<b>562 KOL wallets</b> can’t buy until it bonds', 'E::Bounced'],
+    ['snipers', 'No snipers', 'The first seconds cost <b>up to 99%</b>', 'fee 99% → 1%'],
+    ['dev', 'No dev buy', 'The creator <b>can’t buy</b> before it bonds', 'E::DevBuy'],
+    ['bundles', 'No bundles', '<b>Nothing</b> buys in the launch block', 'E::Bundled'],
+    ['maxWallet', 'Max wallet', '<b>No whale</b> past the cap you pick', 'E::OverCap'],
+    ['vamps', 'No vamps', '<b>No copycats</b> of your name or picture', 'checked at launch'],
+  ];
+  const rules = `<div class="rules">${R.map(([id, n, p, w]) => `<div class="rule"><div class="top"><span class="ic">${icon(id)}</span><span class="on"><i></i></span></div><h3>${n}</h3><p>${p}</p><span class="where${id === 'vamps' ? ' site' : ''}">${w}</span></div>`).join('')}</div>`;
+  const lock = `<div class="lock"><span class="ic">${icon('lock')}</span><div><b>Rules lock at launch.</b><span>Nobody can change them after. Not the creator, not strict.fun.</span></div></div>`;
+  const brand = `<div class="brand"><span class="mk"><span class="mark"><b>{</b>s<b>}</b></span></span><span class="nm">strict<span>.fun</span></span><span class="pill blue soon"><i class="live-dot"></i>soon</span></div>`;
+  const head = `<h1>Pick the rules.<span class="m">The code enforces them.</span></h1>`;
+  const strike = `<div class="strike">${['KOLs', 'Snipers', 'Dev buys', 'Bundles', 'Whales', 'Copycats'].map((x) => `<span><b>✕</b>${x}</span>`).join('')}</div>`;
+  const code = `<div class="code"><div class="bar"><span><span class="rs"></span><b>lib.rs</b> · the line that stops a KOL</span><span class="tag">Rust · open source</span></div><pre>${codeHtml}</pre></div>`;
+  const chips = `<div class="chips">
+    <span class="pill green">${icon('check')}Enforced on chain</span>
+    <span class="pill green">${icon('check')}Open source</span>
+    <span class="pill green">${icon('check')}77 program tests</span>
+    <span class="pill blue">Bonds into Raydium · LP burned</span></div>`;
+
+  document.getElementById('wrap').innerHTML = sq
+    ? `<div>${brand}</div><div>${head}${strike}</div><div class="right">${rules}${lock}</div><div class="bottom">${code}${chips}</div>`
+    : `<div class="left">${brand}${head}${strike}${code}${chips}</div><div class="right">${rules}${lock}</div>`;
+</script></body></html>

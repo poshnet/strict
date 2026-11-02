@@ -1,0 +1,177 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="code.js"></script><script src="icons.js"></script><script src="shared.js"></script>
+<style>
+  /* 1200 x 675, rendered at 1.6x (1920 x 1080). ~13 s. Every element is placed by render(t). */
+  .stage { width: 1200px; height: 675px; }
+  .code-bg { left: 0; top: 0; font-size: 13px; color: #18181B; }
+  #vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 62% 70% at 50% 48%, rgba(10, 10, 11, 0.92) 25%, rgba(10, 10, 11, 0.55) 62%, rgba(10, 10, 11, 0) 100%); }
+  .glow { width: 620px; height: 620px; background: rgba(255, 138, 31, 0.12); }
+  .abs { visibility: hidden; }
+  /* 1: every launch, same story */
+  #s1h { left: 72px; top: 64px; font-size: 54px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; }
+  #s1h span { color: var(--muted); }
+  #chart { left: 72px; top: 210px; width: 1056px; height: 400px; }
+  #chart .line { fill: none; stroke: #F4F3EF; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+  #chart .area { fill: url(#fade); }
+  .tag { font-size: 18px; height: 38px; padding: 0 14px; }
+  #drop { font-family: 'JetBrains Mono', monospace; font-size: 64px; font-weight: 600; color: var(--red); letter-spacing: -0.04em; }
+  /* 2: the question */
+  #q { left: 0; top: 0; width: 1200px; height: 675px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 76px; font-weight: 600; letter-spacing: -0.05em; line-height: 1.02; }
+  #q b { color: var(--accent); font-weight: 600; }
+  /* 3: pick the rules */
+  #s3h { left: 72px; top: 200px; width: 420px; }
+  #s3h h2 { margin: 0; font-size: 66px; font-weight: 600; letter-spacing: -0.05em; line-height: 1.0; }
+  #s3h p { margin: 22px 0 0; font-size: 22px; color: var(--muted); line-height: 1.45; }
+  #panel { left: 540px; top: 76px; width: 588px; border: 1px solid #4A3118; border-radius: 20px; background: rgba(19, 19, 21, 0.96); overflow: hidden; box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5); }
+  #panel .head { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid #26262A; font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
+  .row { display: flex; align-items: center; gap: 14px; padding: 0 22px; height: 76px; border-bottom: 1px solid #1F1F23; }
+  .row:last-child { border-bottom: 0; }
+  .row .ic { width: 40px; height: 40px; border-radius: 11px; background: #0A0A0B; color: var(--accent-soft); display: grid; place-items: center; flex: 0 0 auto; }
+  .row .tx { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .row .n { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+  .row .l { font-size: 15px; color: var(--muted); }
+  /* 4: the code enforces them */
+  #s4h { left: 72px; top: 52px; font-size: 54px; font-weight: 600; letter-spacing: -0.045em; }
+  #code { left: 72px; top: 138px; width: 1056px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); overflow: hidden; }
+  #code .bar { display: flex; justify-content: space-between; height: 42px; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--deep); font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted); }
+  #code pre { margin: 0; padding: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 27px; }
+  #code .ln { display: block; padding: 0 16px; white-space: pre; color: #D2D0C9; }
+  #code .ln i { font-style: normal; color: #7A7872; display: inline-block; width: 46px; }
+  #code .gap { display: block; height: 10px; }
+  #code .ln.hot { background: #2A1A0B; }
+  #code .kw { color: var(--accent); } #code .er { color: var(--red); } #code .cm { color: #8C8981; }
+  #buy { left: 72px; top: 560px; width: 1056px; height: 72px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); padding: 0 22px; box-sizing: border-box;
+    display: flex; align-items: center; gap: 22px; }
+  #buy .w { font-family: 'JetBrains Mono', monospace; font-size: 17px; color: var(--muted); }
+  #buy .a { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; flex: 1; }
+  #buy .st { margin-left: auto; }
+  #buy .st .pill { height: 38px; font-size: 16px; }
+  /* 5: the end card */
+  #end { left: 0; top: 0; width: 1200px; height: 675px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #end .mark { font-size: 150px; }
+  #end .wm { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 44px; letter-spacing: -0.045em; margin-top: 26px; line-height: 1; }
+  #end .wm span { color: #6E6C66; }
+  #end .slogan { font-size: 30px; font-weight: 600; letter-spacing: -0.03em; color: var(--accent); margin-top: 16px; }
+  #end .tag2 { font-size: 30px; color: var(--muted); margin-top: 18px; letter-spacing: -0.02em; }
+  #end .soon { margin-top: 30px; height: 44px; font-size: 18px; padding: 0 18px; }
+  #end .live { display: none; margin-top: 30px; height: 44px; font-size: 18px; padding: 0 18px; }
+  #end .live i { width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
+</style></head>
+<body><div class="stage" id="stage">
+  <div class="code-bg" id="bgcode"></div>
+  <div id="vig"></div>
+  <div class="glow" id="glow"></div>
+
+  <div class="abs" id="s1h">Every launch.<br><span>Same story.</span></div>
+  <svg class="abs" id="chart" viewBox="0 0 1056 400">
+    <defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(244, 243, 239, 0.10)"/><stop offset="1" stop-color="rgba(244, 243, 239, 0)"/></linearGradient></defs>
+    <path class="area" id="area"/><path class="line" id="line"/>
+  </svg>
+  <span class="abs pill red tag" id="t1">KOL bought first</span>
+  <span class="abs pill red tag" id="t2">Sniper in block 0</span>
+  <span class="abs pill red tag" id="t3">Dev bag</span>
+  <span class="abs pill red tag" id="t4">Bundled wallets</span>
+  <div class="abs" id="drop">−93%</div>
+
+  <div class="abs" id="q"><div>What if your coin<br>had <b>rules</b>?</div></div>
+
+  <div class="abs" id="s3h"><h2>Pick the rules.</h2><p>Any of them. They lock the moment your coin goes live.</p></div>
+  <div class="abs" id="panel"><div class="head"><span>The rules for $YOURCOIN</span><span class="pill green" id="lock"></span></div><div id="rows"></div></div>
+
+  <div class="abs" id="s4h">The code enforces them.</div>
+  <div class="abs" id="code"><div class="bar"><span>programs/strict/src/lib.rs · fn buy</span><span>open source</span></div><pre id="src"></pre></div>
+  <div class="abs" id="buy"><div class="w">9fRt…Kd2w</div><div class="a">Buying 3 SOL…</div><div class="st" id="st"></div></div>
+
+  <div class="abs" id="end">
+    <div class="mark"><b>{</b>s<b>}</b></div>
+    <div class="wm">strict<span>.fun</span></div>
+    <div class="tag2">Pick the rules. The code enforces them.</div>
+    <div class="slogan">Strict can be fun.</div>
+    <span class="pill blue soon">Coming soon</span>
+    <span class="pill green live"><i></i>Live now · launch with rules</span>
+  </div>
+</div>
+<script>
+  window.TOTAL = 13;
+  $('bgcode').textContent = (window.CODE || '').repeat(3);
+  $('lock').innerHTML = icon('lock') + 'Locked at launch';
+  $('lock').querySelector('.ico').style.cssText = 'width:14px;height:14px;stroke-width:2.2';
+  $('rows').innerHTML = RULES.map((r, i) => `<div class="row" id="r${i}"><span class="ic">${icon(r.id)}</span><span class="tx"><span class="n">${r.name}</span><span class="l">${r.line}</span></span><span class="switch"><i></i></span></div>`).join('');
+  // the checks of fn buy, cut from the program (source.json, line numbers and all), highlighted plainly
+  const esc = (x) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const hl = (line) => {
+    const c = line.indexOf('//');
+    const code = esc(c >= 0 ? line.slice(0, c) : line).replace(/\b(if|let|fn|mut)\b/g, '<span class="kw">$1</span>').replace(/(E::\w+)/g, '<span class="er">$1</span>');
+    return code + (c >= 0 ? `<span class="cm">${esc(line.slice(c))}</span>` : '');
+  };
+  const S = window.SNIPPETS;
+  const BLOCKS = [S.dev[0], S.bundles[0], S.kols[0], S.maxWallet[0]];
+  let html = '', hot = [];
+  BLOCKS.forEach((b, k) => {
+    const lines = b.code.split('\n'), pad = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+    if (k) html += '<span class="gap"></span>';
+    lines.forEach((l, i) => { const id = `l${k}_${i}`; if (k === 2) hot.push(id); html += `<span class="ln" id="${id}"><i>${b.start + i}</i>${hl(l.slice(pad))}</span>`; });
+  });
+  $('src').innerHTML = html;
+  if (location.hash === '#live') { document.querySelector('#end .soon').style.display = 'none'; document.querySelector('#end .live').style.display = 'inline-flex'; }
+
+  // the chart: up and up, then the dump
+  const PTS = [[0, 330], [80, 318], [150, 300], [220, 270], [290, 250], [360, 205], [430, 170], [500, 120], [560, 80], [610, 60], [640, 120], [680, 300], [720, 372], [800, 380], [900, 384], [1056, 386]];
+  const pathUpTo = (p) => {
+    const n = (PTS.length - 1) * p;
+    const k = Math.floor(n), f = n - k;
+    const pts = PTS.slice(0, k + 1);
+    if (k < PTS.length - 1) pts.push([PTS[k][0] + (PTS[k + 1][0] - PTS[k][0]) * f, PTS[k][1] + (PTS[k + 1][1] - PTS[k][1]) * f]);
+    return pts;
+  };
+  const TAGS = [['t1', 2, 0.55], ['t2', 4, 0.85], ['t3', 6, 1.15], ['t4', 8, 1.45]];
+
+  window.render = function (t) {
+    // the code behind everything drifts up slowly
+    $('bgcode').style.transform = `translateY(${-t * 9}px)`;
+    $('glow').style.transform = `translate(${300 + Math.sin(t / 2) * 140}px, ${-120 + Math.cos(t / 3) * 60}px)`;
+
+    // 1 (0 - 3.1)
+    show($('s1h'), t, 0.1, 2.9);
+    const cv = show($('chart'), t, 0.05, 2.9, { y: 0 });
+    const p = ease(seg(t, 0.15, 2.45));
+    const pts = pathUpTo(p);
+    const d = pts.map((q, i) => `${i ? 'L' : 'M'}${q[0]},${q[1]}`).join(' ');
+    $('line').setAttribute('d', d);
+    $('line').style.stroke = p > 0.62 ? '#FF5C6A' : '#F4F3EF';
+    $('area').setAttribute('d', `${d} L${pts[pts.length - 1][0]},400 L0,400 Z`);
+    for (const [id, at, start] of TAGS) {
+      const [x, y] = PTS[at];
+      const el = $(id);
+      el.style.left = `${72 + x - 20}px`; el.style.top = `${210 + y - 64}px`;
+      show(el, t, start, 2.9, { y: 10 });
+    }
+    const dp = show($('drop'), t, 2.0, 2.9, { y: -10 });
+    $('drop').style.left = '870px'; $('drop').style.top = '470px';
+
+    // 2 (3.1 - 4.4)
+    show($('q'), t, 3.1, 4.25, { y: 24, s: 0.96 });
+
+    // 3 (4.4 - 8.4)
+    show($('s3h'), t, 4.45, 8.25, { x: -20, y: 0 });
+    show($('panel'), t, 4.55, 8.25, { y: 30 });
+    RULES.forEach((r, i) => flip($(`r${i}`), seg(t, 5.0 + i * 0.42, 5.25 + i * 0.42)));
+
+    // 4 (8.4 - 10.6)
+    show($('s4h'), t, 8.45, 10.45);
+    show($('code'), t, 8.55, 10.45, { y: 24 });
+    hot.forEach((id) => $(id).classList.toggle('hot', t > 9.15));
+    show($('buy'), t, 8.9, 10.45, { x: 30, y: 0 });
+    const stopped = t > 9.35;
+    $('buy').querySelector('.a').textContent = stopped ? 'Buy refused' : 'Buying 3 SOL…';
+    $('st').innerHTML = stopped ? '<span class="pill red">Stopped · on the KOL list</span>' : '<span class="pill blue">Checking the rules…</span>';
+    $('buy').style.borderColor = stopped ? '#4A1E24' : 'var(--line)';
+
+    // 5 (10.6 - 13)
+    show($('end'), t, 10.6, 99, { y: 0, s: 0.92, d: 0.6 });
+  };
+  window.render(0);
+</script></body></html>

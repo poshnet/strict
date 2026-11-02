@@ -1,0 +1,82 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=JetBrains+Mono:wght@600;700&family=Geist+Mono:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="icons.js"></script><script src="shared.js"></script>
+<style>
+  /* "What strict.fun brings": a GIF for the tweet of the same name. Square 1080, ~10 s, loops: the eight points tick on
+     one by one, each with the program's own proof beside it (the error a refused buy gets, the fee curve, the NFT, the
+     burned LP), then the slogan. Every frame comes from render(t). */
+  .stage { width: 1080px; height: 1080px; background: #0A0A0B; font-family: 'Sora', sans-serif; color: var(--ink); }
+  .sc { position: absolute; inset: 0; visibility: hidden; }
+  #top { position: absolute; left: 80px; top: 70px; display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 800; letter-spacing: -0.04em; }
+  #top .mark { font-size: 34px; } #top span.d { color: #6E6C66; }
+  #h { position: absolute; left: 80px; top: 140px; margin: 0; font-size: 104px; font-weight: 800; letter-spacing: -0.058em; line-height: 0.95; }
+  #h em { font-style: normal; color: var(--accent); }
+  #list { position: absolute; left: 80px; right: 80px; top: 356px; display: flex; flex-direction: column; gap: 10px; }
+  .it { display: flex; align-items: center; gap: 22px; height: 70px; padding: 0 22px 0 18px; border-radius: 18px; background: #141416; border: 2px solid #232327; will-change: transform, opacity; }
+  .ck { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: #1E140A; border: 2px solid #3D2814; color: var(--accent); }
+  .ck svg { width: 24px; height: 24px; stroke-width: 3; }
+  .it.on .ck { background: var(--accent); border-color: var(--accent); color: #0A0A0B; }
+  .it b { font-size: 34px; font-weight: 800; letter-spacing: -0.035em; white-space: nowrap; }
+  .it code { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; padding: 8px 14px; border-radius: 10px; white-space: nowrap; }
+  .c-red { background: #2A1014; color: var(--red); } .c-amber { background: #2A1A08; color: var(--accent); } .c-green { background: #0E2219; color: var(--green); }
+  #end { background: var(--accent); color: #0A0A0B; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #end .mark { font-size: 200px; color: #0A0A0B; } #end .mark b { color: #fff; }
+  #end h2 { margin: 36px 0 0; font-size: 132px; font-weight: 800; letter-spacing: -0.06em; line-height: 0.95; }
+  #end .wm { margin-top: 40px; font-size: 56px; font-weight: 800; letter-spacing: -0.045em; } #end .wm span { color: #5A3008; }
+  #wipe { position: absolute; left: 0; right: 0; height: 1080px; background: var(--accent); z-index: 5; }
+</style></head>
+<body><div class="stage" id="stage">
+  <div class="sc" id="main">
+    <div id="top"><span class="mark"><b>{</b>s<b>}</b></span><span>strict<span class="d">.fun</span></span></div>
+    <h1 id="h">What strict.fun<br><em>brings.</em></h1>
+    <div id="list"></div>
+  </div>
+  <div class="sc" id="end"><span class="mark w" id="mk"><b>{</b>s<b>}</b></span><h2 id="slog">Strict can<br>be fun.</h2><div class="wm" id="ewm">strict<span>.fun</span></div></div>
+  <div id="wipe"></div>
+</div>
+<script>
+  const ITEMS = [
+    ['Rules on chain, not promises', 'fn buy()', 'c-amber'],
+    ['KOLs bounced until it bonds', 'E::Bounced', 'c-red'],
+    ['Snipers pay up to 99%', 'fee 99% → 1%', 'c-amber'],
+    ['The dev can’t buy', 'E::DevBuy', 'c-red'],
+    ['Nothing buys in block 0', 'E::Bundled', 'c-red'],
+    ['Max wallet, no copycats', 'E::OverCap', 'c-red'],
+    ['Creator fees on an NFT', '1 of 1', 'c-amber'],
+    ['Bonds to Raydium, LP burned', 'LP: 0', 'c-green'],
+  ];
+  $('list').innerHTML = ITEMS.map(([t, c, k], i) => `<div class="it" id="i${i}"><span class="ck">${icon('check')}</span><b>${t}</b><code class="${k}">${c}</code></div>`).join('');
+  const T0 = 0.0, STEP = 0.62, END = T0 + 0.5 + ITEMS.length * STEP + 1.6; // the slogan card
+  window.TOTAL = END + 2.4;
+  function pop(el, t, a, { from = 1.5, d = 0.32, y = 0 } = {}) { const p = seg(t, a, a + d); el.style.opacity = clamp(p * 2.4); el.style.transform = `translateY(${y * (1 - ease(p))}px) scale(${p <= 0 ? from : from + (1 - from) * back(p)})`; }
+
+  window.render = function (t) {
+    const inEnd = t >= END;
+    $('main').style.visibility = inEnd ? 'hidden' : 'visible';
+    $('end').style.visibility = inEnd ? 'visible' : 'hidden';
+    // frame one already has the headline and the first point ticked (it's the still people scroll past)
+    ITEMS.forEach((_, i) => {
+      const a = T0 + 0.5 + (i - 1) * STEP, el = $(`i${i}`);
+      const p = i === 0 ? 1 : seg(t, a, a + 0.34), e = i === 0 ? 1 : back(p);
+      el.style.opacity = clamp(p * 3);
+      el.style.transform = `translateX(${-90 * (1 - e)}px)`;
+      el.classList.toggle('on', i === 0 || t >= a + 0.22);
+      const ck = el.querySelector('.ck');
+      const tick = i === 0 ? 1 : seg(t, a + 0.22, a + 0.42);
+      ck.style.transform = `scale(${tick > 0 && tick < 1 ? 1 + 0.35 * Math.sin(tick * Math.PI) : 1})`;
+    });
+    // the wipe into the slogan, and back to the top for the loop
+    const w = $('wipe');
+    const into = seg(t, END - 0.28, END + 0.28), out = seg(t, window.TOTAL - 0.34, window.TOTAL);
+    if (into > 0 && into < 1) { w.style.visibility = 'visible'; w.style.background = '#FF8A1F'; w.style.transform = `translateY(${(1 - inOut(into) * 2) * 1080}px)`; }
+    else if (out > 0) { w.style.visibility = 'visible'; w.style.background = '#0A0A0B'; w.style.transform = `translateY(${(1 - inOut(out)) * 1080}px)`; }
+    else w.style.visibility = 'hidden';
+    pop($('mk'), t, END + 0.05, { from: 0.3, d: 0.45, y: -80 });
+    pop($('slog'), t, END + 0.3, { from: 1.4 });
+    pop($('ewm'), t, END + 0.6, { from: 1.2 });
+  };
+  window.render(0);
+</script>
+</body></html>

@@ -1,0 +1,19 @@
+[package]
+name = "strict"
+version = "0.2.0"
+description = "strict.fun: a bonding curve whose creator picks rules (no KOLs, no snipers, no dev buy, no bundles, max wallet) that every buy is checked against"
+edition = "2021"
+rust-version = "1.75"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "strict"
+
+[features]
+no-entrypoint = []
+# our own panic handler (below), which logs one word instead of formatting the panic: keeps core::fmt out of the binary
+default = ["custom-panic"]
+custom-panic = []
+
+[dependencies]
+solana-program = "=1.18.26"

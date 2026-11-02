@@ -1,0 +1,197 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="code.js"></script><script src="icons.js"></script><script src="shared.js"></script>
+<style>
+  /* The launch video: 1200 x 675, rendered at 1.6x (1920 x 1080). ~17 s. Every element is placed by render(t).
+     The coin ($GAVEL) and its numbers are a product demo, not a real coin. */
+  .stage { width: 1200px; height: 675px; }
+  .code-bg { left: 0; top: 0; font-size: 13px; color: #18181B; }
+  #vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 62% 70% at 50% 48%, rgba(10, 10, 11, 0.92) 25%, rgba(10, 10, 11, 0.55) 62%, rgba(10, 10, 11, 0) 100%); }
+  .glow { width: 640px; height: 640px; background: rgba(255, 138, 31, 0.12); }
+  .abs { visibility: hidden; }
+  /* 1: live */
+  #open { left: 0; top: 0; width: 1200px; height: 675px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #open .mark { font-size: 130px; }
+  #open h1 { margin: 34px 0 0; font-size: 64px; font-weight: 600; letter-spacing: -0.05em; }
+  #open .live { margin-top: 24px; height: 44px; font-size: 18px; padding: 0 18px; }
+  .live i { width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); display: inline-block; }
+  /* 2: launch with rules */
+  #s2h { left: 72px; top: 92px; width: 400px; }
+  #s2h h2 { margin: 0; font-size: 60px; font-weight: 600; letter-spacing: -0.05em; line-height: 1.0; }
+  #s2h p { margin: 20px 0 0; font-size: 21px; color: var(--muted); line-height: 1.45; }
+  #form { left: 520px; top: 46px; width: 608px; border: 1px solid #26262A; border-radius: 20px; background: rgba(19, 19, 21, 0.97); padding: 18px; box-sizing: border-box; box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5); }
+  #form .coin { display: flex; align-items: center; gap: 14px; padding-bottom: 14px; border-bottom: 1px solid #26262A; }
+  .av { width: 52px; height: 52px; border-radius: 14px; background: #F4F3EF; color: #0A0A0B; display: grid; place-items: center; font-weight: 700; font-size: 24px; flex: 0 0 auto; }
+  #form .nm { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  #form .tk { font-family: 'JetBrains Mono', monospace; font-size: 15px; color: var(--muted); margin-top: 2px; }
+  .chk { display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 12px; margin-top: 8px; border-radius: 12px; border: 1px solid #26262A; }
+  .chk .box { width: 24px; height: 24px; border-radius: 7px; border: 2px solid #38383E; display: grid; place-items: center; box-sizing: border-box; flex: 0 0 auto; }
+  .chk .box .ico { width: 15px; height: 15px; stroke: #0A0A0B; stroke-width: 3; opacity: 0; }
+  .chk .n { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; width: 150px; }
+  .chk .l { font-size: 14px; color: var(--muted); }
+  .chk.on { border-color: #4A3118; background: #1E140A; }
+  .chk.on .box { background: var(--accent); border-color: var(--accent); }
+  .chk.on .box .ico { opacity: 1; }
+  #go { margin-top: 14px; height: 54px; border-radius: 12px; background: var(--accent); color: #0A0A0B; font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  #go.done { background: var(--green); }
+  /* 3: the coin page */
+  #top { left: 72px; top: 40px; width: 1056px; display: flex; align-items: center; gap: 16px; }
+  #top .av { width: 60px; height: 60px; font-size: 28px; }
+  #top h2 { margin: 0; font-size: 36px; font-weight: 600; letter-spacing: -0.04em; }
+  #top h2 span { font-size: 20px; color: var(--muted); font-weight: 500; }
+  #top .stat { margin-left: auto; text-align: right; }
+  #top .stat .k { font-size: 13px; color: var(--muted); }
+  #top .stat .v { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; margin-top: 2px; }
+  #bond { width: 220px; }
+  #bond .bar { height: 8px; border-radius: 999px; background: #1C1C1F; margin-top: 10px; overflow: hidden; }
+  #bond .bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  #rules { left: 72px; top: 130px; width: 640px; border: 1px solid #4A3118; border-radius: 18px; background: rgba(19, 19, 21, 0.97); overflow: hidden; }
+  #rules .head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #26262A; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+  .rr { display: flex; align-items: center; gap: 12px; height: 62px; padding: 0 18px; border-bottom: 1px solid #1F1F23; }
+  .rr:last-child { border-bottom: 0; }
+  .rr .ic { width: 34px; height: 34px; border-radius: 10px; background: #0A0A0B; color: var(--accent-soft); display: grid; place-items: center; flex: 0 0 auto; }
+  .rr .ic .ico { width: 18px; height: 18px; }
+  .rr .n { font-size: 17px; font-weight: 600; flex: 1; letter-spacing: -0.01em; }
+  .rr .on { height: 22px; font-size: 12px; padding: 0 8px; }
+  .rr .v { width: 168px; text-align: right; }
+  .rr .v b { display: block; font-family: 'JetBrains Mono', monospace; font-size: 19px; font-weight: 600; }
+  .rr .v span { font-size: 12px; color: var(--muted); }
+  #feed { left: 736px; top: 130px; width: 392px; border: 1px solid #26262A; border-radius: 18px; background: rgba(19, 19, 21, 0.97); overflow: hidden; height: 434px; }
+  #feed .head { padding: 14px 18px; border-bottom: 1px solid #26262A; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; display: flex; justify-content: space-between; }
+  #feed .head span { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .ev { position: absolute; left: 0; right: 0; padding: 12px 18px; border-bottom: 1px solid #1F1F23; box-sizing: border-box; height: 74px; }
+  .ev .w { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted); }
+  .ev .x { font-size: 15px; margin-top: 4px; color: #D2D0C9; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .ev .pill { height: 22px; font-size: 11.5px; padding: 0 8px; }
+  /* 4: bonded */
+  #bonded { left: 0; top: 0; width: 1200px; height: 675px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #bonded h2 { margin: 0; font-size: 76px; font-weight: 600; letter-spacing: -0.05em; }
+  #bonded .bar { width: 560px; height: 12px; border-radius: 999px; background: #1C1C1F; margin: 34px 0 0; overflow: hidden; }
+  #bonded .bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+  #bonded .facts { display: flex; gap: 12px; margin-top: 30px; }
+  #bonded .facts .pill { height: 40px; font-size: 16px; padding: 0 16px; }
+  /* 5: end */
+  #end { left: 0; top: 0; width: 1200px; height: 675px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #end .mark { font-size: 150px; }
+  #end h2 { margin: 30px 0 0; font-size: 60px; font-weight: 600; letter-spacing: -0.05em; line-height: 1.05; }
+  #end h2 span { color: var(--muted); }
+  #end .slogan { margin-top: 20px; font-size: 30px; font-weight: 600; letter-spacing: -0.03em; color: var(--accent); }
+  #end .url { margin-top: 18px; font-size: 30px; color: var(--accent-soft); }
+  #end .live { margin-top: 22px; height: 44px; font-size: 18px; padding: 0 18px; }
+</style></head>
+<body><div class="stage" id="stage">
+  <div class="code-bg" id="bgcode"></div>
+  <div id="vig"></div>
+  <div class="glow" id="glow"></div>
+
+  <div class="abs" id="open">
+    <div class="mark"><b>{</b>s<b>}</b></div>
+    <h1>strict.fun is live.</h1>
+    <span class="pill green live"><i></i>Launch a coin with rules</span>
+  </div>
+
+  <div class="abs" id="s2h"><h2>Launch a coin. Pick its rules.</h2><p>Every rule is checked on chain, on every buy, until it bonds.</p></div>
+  <div class="abs" id="form">
+    <div class="coin"><span class="av">G</span><span><div class="nm">Gavel</div><div class="tk">$GAVEL</div></span></div>
+    <div id="checks"></div>
+    <div id="go">Launch $GAVEL with 6 rules</div>
+  </div>
+
+  <div class="abs" id="top">
+    <span class="av">G</span>
+    <h2>Gavel <span>$GAVEL</span></h2>
+    <span class="pill blue" style="height:28px;font-size:13px;margin-left:8px;" id="six"></span>
+    <div class="stat"><div class="k">Market cap</div><div class="v" id="mcap">$4.9K</div></div>
+    <div class="stat" id="bond"><div class="k" id="bondk">Bonding 0%</div><div class="bar"><i id="bondbar"></i></div></div>
+  </div>
+  <div class="abs" id="rules"><div class="head"><span>The rules for $GAVEL</span><span class="pill green" id="lock"></span></div><div id="rrows"></div></div>
+  <div class="abs" id="feed"><div class="head">Rules at work <span>live</span></div><div id="evs" style="position:relative;"></div></div>
+
+  <div class="abs" id="bonded">
+    <h2>Bonded. Fair from block one.</h2>
+    <div class="bar"><i id="bbar"></i></div>
+    <div class="facts"><span class="pill green">LP burned</span><span class="pill blue">Sniper fees bought back &amp; burned</span><span class="pill blue">No KOL got in early</span></div>
+  </div>
+
+  <div class="abs" id="end">
+    <div class="mark"><b>{</b>s<b>}</b></div>
+    <h2>Pick the rules.<br><span>The code enforces them.</span></h2>
+    <div class="slogan">Strict can be fun.</div>
+    <div class="url mono">strict.fun</div>
+    <span class="pill green live"><i></i>Live now</span>
+  </div>
+</div>
+<script>
+  window.TOTAL = 17;
+  $('bgcode').textContent = (window.CODE || '').repeat(3);
+  $('lock').innerHTML = icon('lock') + 'Locked';
+  $('lock').querySelector('.ico').style.cssText = 'width:13px;height:13px;stroke-width:2.2';
+  $('six').innerHTML = icon('lock') + '6 strict rules';
+  $('six').querySelector('.ico').style.cssText = 'width:13px;height:13px;stroke-width:2.2';
+  $('checks').innerHTML = RULES.map((r, i) => `<div class="chk" id="c${i}"><span class="box">${icon('check')}</span><span class="n">${r.name}</span><span class="l">${r.line}</span></div>`).join('');
+  // the coin page: each rule with what it has done so far
+  const STATS = [
+    { k: 'kols', to: 14, dp: 0, fmt: (v) => v, unit: 'KOL buys stopped' },
+    { k: 'snipers', to: 2.1, dp: 1, fmt: (v) => `${v} SOL`, unit: 'paid by snipers' },
+    { k: 'dev', to: 0, dp: 0, fmt: () => '0%', unit: 'held by the creator' },
+    { k: 'bundles', to: 0, dp: 0, fmt: () => '0', unit: 'buys in launch block' },
+    { k: 'maxWallet', to: 1.9, dp: 1, fmt: (v) => `${v}%`, unit: 'biggest wallet' },
+    { k: 'vamps', to: 2, dp: 0, fmt: (v) => v, unit: 'copycats refused' },
+  ];
+  $('rrows').innerHTML = RULES.map((r, i) => `<div class="rr"><span class="ic">${icon(r.id)}</span><span class="n">${r.name}</span><span class="pill green on">On</span><span class="v"><b id="v${i}">0</b><span>${STATS[i].unit}</span></span></div>`).join('');
+  const EVENTS = [
+    ['9fRt…Kd2w', 'Tried to buy 3 SOL', 'On the KOL list', 'red'],
+    ['Bq8s…x1Lm', 'Bought in second 1', '99% fee → buyback', 'blue'],
+    ['7xKq…3fPa', 'Creator tried to buy', 'No dev buy', 'red'],
+    ['4hNb…pQ7e', 'Tried to buy 1.2 SOL', 'On the KOL list', 'red'],
+    ['Cz3v…9aTe', 'Bought past 2%', 'Max wallet', 'red'],
+  ];
+  $('evs').innerHTML = EVENTS.map(([w, x, r, c], i) => `<div class="ev" id="e${i}"><div class="w">${w}</div><div class="x"><span>${x}</span><span class="pill ${c}">${r}</span></div></div>`).join('');
+
+  window.render = function (t) {
+    $('bgcode').style.transform = `translateY(${-t * 8}px)`;
+    $('glow').style.transform = `translate(${280 + Math.sin(t / 2.2) * 160}px, ${-140 + Math.cos(t / 3) * 70}px)`;
+
+    // 1 (0 - 1.9)
+    show($('open'), t, 0.05, 1.75, { y: 0, s: 0.94, d: 0.55 });
+
+    // 2 (1.9 - 6.6)
+    show($('s2h'), t, 1.95, 6.45, { x: -20, y: 0 });
+    show($('form'), t, 2.05, 6.45, { y: 30 });
+    RULES.forEach((_, i) => $(`c${i}`).classList.toggle('on', t > 2.6 + i * 0.36));
+    const pressed = t > 5.05, live = t > 5.5;
+    $('go').style.transform = `scale(${pressed && !live ? 0.97 : 1})`;
+    $('go').classList.toggle('done', live);
+    $('go').textContent = live ? 'Live · rules locked' : 'Launch $GAVEL with 6 rules';
+
+    // 3 (6.6 - 11.9)
+    show($('top'), t, 6.6, 11.75, { y: -12 });
+    show($('rules'), t, 6.7, 11.75, { y: 24 });
+    show($('feed'), t, 6.85, 11.75, { y: 24 });
+    const p = seg(t, 7.0, 11.4);
+    STATS.forEach((s, i) => { $(`v${i}`).textContent = s.fmt(count(0, s.to, p, s.dp)); });
+    const b = ease(seg(t, 6.8, 11.6)) * 0.86;
+    $('bondbar').style.width = `${b * 100}%`;
+    $('bondk').textContent = `Bonding ${Math.round(b * 100)}%`;
+    $('mcap').textContent = `$${(4.9 + b * 62).toFixed(1)}K`;
+    EVENTS.forEach((_, i) => {
+      const at = 7.3 + i * 0.85;
+      const k = EVENTS.length - 1 - i; // newest on top: each new one pushes the others down
+      const el = $(`e${i}`);
+      const newer = EVENTS.reduce((n, __, j) => n + (j > i && t > 7.3 + j * 0.85 ? 1 : 0), 0);
+      el.style.top = `${newer * 74}px`;
+      show(el, t, at, 11.75, { y: -14, d: 0.35 });
+      el.style.transition = 'none';
+    });
+
+    // 4 (11.9 - 14.3)
+    show($('bonded'), t, 11.9, 14.1, { y: 0, s: 0.95 });
+    $('bbar').style.width = `${(0.86 + 0.14 * ease(seg(t, 12.1, 12.9))) * 100}%`;
+
+    // 5 (14.3 - 17)
+    show($('end'), t, 14.3, 99, { y: 0, s: 0.92, d: 0.6 });
+  };
+  window.render(0);
+</script></body></html>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="code.js"></script><script src="icons.js"></script>
+<style>
+  /* the link card: 1200 x 630 */
+  .stage { width: 1200px; height: 630px; }
+  .code-bg { left: 620px; top: -8px; font-size: 14px; color: #17171A; -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%, #000 75%, transparent); }
+  .g1 { width: 720px; height: 520px; left: -100px; top: -140px; background: rgba(255, 138, 31, 0.11); }
+  #left { position: absolute; left: 80px; top: 78px; width: 1040px; }
+  .mark { font-size: 92px; }
+  h1 { margin: 44px 0 0; font-size: 76px; line-height: 1.02; letter-spacing: -0.045em; font-weight: 600; white-space: nowrap; }
+  h1 span { color: var(--muted); }
+  .chips { position: absolute; left: 80px; bottom: 66px; right: 80px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .chips .pill { height: 42px; font-size: 18px; padding: 0 16px; gap: 9px; }
+  .chips .ico { width: 18px; height: 18px; }
+  .url { position: absolute; right: 80px; top: 98px; font-size: 26px; color: var(--accent-soft); }
+</style></head>
+<body><div class="stage">
+  <div class="code-bg" id="code"></div><div class="glow g1"></div>
+  <div class="url mono">strict.fun</div>
+  <div id="left"><div class="mark"><b>{</b>s<b>}</b></div><h1>Pick the rules.<br><span>The code enforces them.</span></h1></div>
+  <div class="chips" id="chips"></div>
+</div>
+<script>
+  document.getElementById('code').textContent = window.CODE || '';
+  document.getElementById('chips').innerHTML = RULES.map((r) => `<span class="pill blue">${icon(r.id)}${r.name}</span>`).join('');
+</script></body></html>

@@ -1,0 +1,12 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* 400 x 400 (rendered at 2x). X crops it to a circle: the mark sits well inside it. */
+  .stage { width: 400px; height: 400px; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 44%, #1D1710 0%, #0A0A0B 64%); }
+  .mark { font-size: 166px; transform: translate(-3px, -6px); }
+  .ring { position: absolute; inset: 26px; border-radius: 50%; border: 1px solid rgba(255, 138, 31, 0.12); }
+</style></head>
+<body><div class="stage"><div class="ring"></div><div class="mark"><b>{</b>s<b>}</b></div></div></body></html>

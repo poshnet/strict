@@ -1,0 +1,50 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="code.js"></script><script src="icons.js"></script>
+<style>
+  /* 1500 x 500 (rendered at 2x). X puts the profile picture over the bottom left (desktop) and crops the top and bottom
+     a little on phones: the words sit up and left, clear of that corner; the rules card on the right. */
+  .stage { width: 1500px; height: 500px; }
+  .code-bg { left: 520px; top: -4px; font-size: 13px; color: #18181B;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 72%, transparent 100%); }
+  .g1 { width: 640px; height: 420px; left: 20px; top: -90px; background: rgba(255, 138, 31, 0.10); }
+  .g2 { width: 540px; height: 440px; right: 20px; top: 50px; background: rgba(255, 138, 31, 0.07); }
+  #left { position: absolute; left: 96px; top: 64px; width: 780px; }
+  .wordmark { font-size: 30px; }
+  h1 { margin: 24px 0 0; font-size: 62px; line-height: 1.02; letter-spacing: -0.045em; font-weight: 600; white-space: nowrap; }
+  h1 span { color: var(--muted); }
+  .sub { margin-top: 20px; font-size: 20px; color: var(--muted); letter-spacing: -0.01em; }
+  .sub b { color: var(--ink2); font-weight: 500; }
+  #card { position: absolute; right: 84px; top: 46px; width: 456px; border: 1px solid #4A3118; border-radius: 18px; background: rgba(19, 19, 21, 0.94); overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45); }
+  .head { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px; border-bottom: 1px solid #26262A; }
+  .head .t { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+  .head .pill { height: 26px; font-size: 12px; padding: 0 10px; gap: 6px; }
+  .head .pill .ico { width: 13px; height: 13px; stroke-width: 2.2; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 0 18px; height: 52px; border-bottom: 1px solid #1F1F23; }
+  .row:last-child { border-bottom: 0; }
+  .row .ic { width: 30px; height: 30px; border-radius: 9px; background: #0A0A0B; color: var(--accent-soft); display: grid; place-items: center; flex: 0 0 auto; }
+  .row .ic .ico { width: 16px; height: 16px; }
+  .row .n { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; flex: 1; }
+  .row .switch { background: var(--accent); justify-content: flex-end; }
+</style></head>
+<body><div class="stage">
+  <div class="code-bg" id="code"></div>
+  <div class="glow g1"></div><div class="glow g2"></div>
+  <div id="left">
+    <div class="wordmark"><b>{</b>strict<b>}</b>.fun</div>
+    <h1>Pick the rules.<br><span>The code enforces them.</span></h1>
+    <div class="sub">No KOLs. No snipers. No dev buys. <b>Checked on every buy, on chain.</b></div>
+  </div>
+  <div id="card">
+    <div class="head"><span class="t">The rules for your coin</span><span class="pill green" id="lock"></span></div>
+    <div id="rows"></div>
+  </div>
+</div>
+<script>
+  document.getElementById('code').textContent = window.CODE || '';
+  document.getElementById('lock').innerHTML = icon('lock') + 'Locked at launch';
+  document.getElementById('rows').innerHTML = RULES.map((r) => `<div class="row"><span class="ic">${icon(r.id)}</span><span class="n">${r.name}</span><span class="switch"><i></i></span></div>`).join('');
+</script></body></html>

@@ -1,0 +1,320 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Geist+Mono:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="icons.js"></script><script src="shared.js"></script>
+<style>
+  /* The explainer (a GIF for X): 1200 x 675, ~36 s. Every launch dies the same four ways (a coin page pumps, then one of
+     them dumps it), "Unless it has rules.", the logo, then the rules at work on a live coin page (KOL buys bounced until
+     it bonds; snipers paying 99%), a quick card per remaining rule, and soon. Every frame comes from render(t). The coins,
+     wallets and numbers are a demo, not real. */
+  .stage { width: 1200px; height: 675px; background: #0A0A0B; font-family: 'Sora', sans-serif; }
+  .sc { position: absolute; inset: 0; overflow: hidden; visibility: hidden; }
+  .black { background: #0A0A0B; color: var(--ink); }
+  .amber { background: var(--accent); color: #0A0A0B; }
+  .big { font-weight: 800; letter-spacing: -0.055em; line-height: 0.96; margin: 0; }
+  .em { color: var(--accent); }
+  .amber .em { color: var(--accent); background: #0A0A0B; padding: 0 0.12em 0.04em; border-radius: 0.1em; }
+  .w { display: inline-block; }
+
+  /* a coin page: the coin on the left, its live chart and trades on the right */
+  .cl { position: absolute; left: 56px; top: 50px; width: 450px; }
+  .coin { display: flex; align-items: center; gap: 14px; }
+  .coin .av { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 26px; font-weight: 800; color: #0A0A0B; }
+  .coin b { display: block; font-size: 26px; letter-spacing: -0.03em; }
+  .coin span span { font-size: 15px; font-weight: 600; opacity: 0.6; }
+  .capk { margin-top: 26px; font-size: 16px; font-weight: 600; opacity: 0.6; }
+  .cap { display: flex; align-items: baseline; gap: 12px; margin-top: 2px; }
+  .cap b { font-size: 68px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .cap span { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .bond { margin-top: 16px; }
+  .bond .r { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; opacity: 0.75; }
+  .bond .t { height: 10px; border-radius: 999px; margin-top: 7px; overflow: hidden; }
+  .black .bond .t { background: #26262B; } .amber .bond .t { background: rgba(10, 10, 11, 0.18); }
+  .bond .t i { display: block; height: 100%; border-radius: 999px; }
+  .black .bond .t i { background: var(--accent); } .amber .bond .t i { background: #0A0A0B; }
+  .lab { position: relative; margin-top: 40px; font-size: 64px; font-weight: 800; letter-spacing: -0.05em; line-height: 0.98; display: inline-block; }
+  .lab .strike { position: absolute; left: -4px; top: 52%; height: 9px; border-radius: 5px; background: var(--red); }
+  .lab.stamped { padding: 4px 16px 10px; border-radius: 14px; background: var(--red); color: #fff; }
+  .sub { margin-top: 12px; font-size: 21px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; }
+  .black .sub { color: #B9B7B0; } .amber .sub { color: #3A1E04; }
+  .timer { display: inline-flex; flex-direction: column; margin-top: 18px; padding: 8px 16px 10px; border-radius: 14px; background: #0A0A0B; color: #fff; }
+  .timer small { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .timer b { font-family: 'JetBrains Mono', monospace; font-size: 34px; letter-spacing: -0.04em; line-height: 1.1; }
+  .card { position: absolute; left: 560px; top: 40px; width: 590px; height: 595px; box-sizing: border-box; border-radius: 26px; background: #141416; border: 2px solid #26262B; color: var(--ink); overflow: hidden; }
+  .amber .card { background: #0A0A0B; border-color: #0A0A0B; box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.6); }
+  .card .h { position: absolute; left: 22px; top: 18px; font-size: 14px; font-weight: 700; color: var(--muted); }
+  .card svg { position: absolute; left: 0; top: 46px; }
+  .rows { position: absolute; left: 18px; right: 18px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 12px; background: #1B1B1F; font-size: 16px; }
+  .row .a { width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto; }
+  .row b { font-weight: 800; letter-spacing: -0.02em; }
+  .row span { color: var(--muted); font-weight: 600; flex: 1; }
+  .pill { height: 26px; padding: 0 12px; border-radius: 8px; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; }
+  .p-red { background: #3A1318; color: var(--red); } .p-green { background: #0F2A1E; color: var(--green); } .p-amber { background: #3A230B; color: var(--accent); }
+
+  /* the turn */
+  #tb { display: flex; flex-direction: column; justify-content: center; padding-left: 80px; }
+  #tb .big { font-size: 128px; }
+  #bgc { position: absolute; inset: 0; opacity: 0.22; }
+  #logo { display: flex; align-items: center; justify-content: center; gap: 26px; }
+  #logo .mark { font-size: 190px; color: #0A0A0B; } #logo .mark b { color: #fff; }
+  #logo .wm { font-size: 150px; font-weight: 800; letter-spacing: -0.06em; } #logo .wm span { color: #5A3008; }
+
+  /* intro cards */
+  .ttl { display: flex; flex-direction: column; justify-content: center; padding-left: 80px; }
+  .ttl .big { font-size: 136px; }
+  .ttl p { margin: 22px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+  .black.ttl p { color: #B9B7B0; } .amber.ttl p { color: #3A1E04; }
+
+  /* quick cards */
+  .qc .big { position: absolute; left: 80px; top: 110px; font-size: 110px; width: 1040px; }
+  .qv { position: absolute; right: 80px; bottom: 90px; }
+  .dash { position: absolute; left: 80px; bottom: 50px; display: flex; gap: 8px; }
+  .dash i { width: 36px; height: 6px; border-radius: 3px; background: currentColor; opacity: 0.25; }
+  .dash i.on { opacity: 1; }
+  .blocks { display: flex; gap: 14px; }
+  .blk { width: 110px; height: 150px; border-radius: 18px; border: 3px solid #2A2A2F; background: #141416; position: relative; overflow: hidden; }
+  .blk i { position: absolute; left: 14px; right: 14px; height: 22px; border-radius: 6px; background: var(--green); }
+  .blk small { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-size: 16px; font-weight: 800; color: var(--muted); }
+  .blk.z { border-color: var(--red); background: #1F0E11; } .blk.z small { color: var(--red); }
+  .blk.z .lk { position: absolute; left: 0; right: 0; top: 34px; display: grid; place-items: center; color: var(--red); }
+  .blk.z .lk .ico { width: 54px; height: 54px; stroke-width: 2.2; }
+  .capbox { width: 620px; padding: 26px 30px; border-radius: 22px; background: #0A0A0B; color: #fff; }
+  .capbox .r { display: flex; justify-content: space-between; font-size: 24px; font-weight: 800; }
+  .capbox .tr { position: relative; height: 40px; border-radius: 999px; background: #26262B; margin-top: 16px; }
+  .capbox .tr i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--accent); }
+  .capbox .cl2 { position: absolute; top: -10px; bottom: -10px; border-left: 5px dashed #fff; }
+  .tk { display: flex; flex-direction: column; gap: 14px; align-items: flex-end; }
+  .tk .t { display: flex; align-items: center; gap: 22px; height: 84px; padding: 0 26px; border-radius: 20px; font-size: 52px; font-weight: 800; letter-spacing: -0.04em; }
+  .tk .t small { font-size: 22px; font-weight: 800; letter-spacing: 0; padding: 6px 12px; border-radius: 10px; }
+  .tk .live { background: #141416; border: 3px solid var(--green); color: #fff; } .tk .live small { background: #0F2A1E; color: var(--green); }
+  .tk .copy { background: #141416; border: 3px solid var(--red); color: #8A8780; text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 6px; } .tk .copy small { background: #3A1318; color: var(--red); }
+  .wal { display: flex; align-items: center; gap: 18px; padding: 22px 26px; border-radius: 22px; background: #141416; border: 2px solid #26262B; color: #fff; width: 600px; box-sizing: border-box; }
+  .wal .a { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(140deg, #4A3A2A, #1E140A); color: var(--accent-soft); }
+  .wal .a .ico { width: 32px; height: 32px; }
+  .wal b { font-size: 32px; letter-spacing: -0.03em; display: block; } .wal span { font-size: 22px; color: var(--muted); font-weight: 600; }
+  .wal .pill { margin-left: auto; height: 44px; font-size: 22px; padding: 0 18px; border-radius: 12px; }
+  .pass { width: 520px; padding: 26px 30px; border-radius: 26px; background: linear-gradient(160deg, #1A1612, #0E0D0C); border: 3px solid #3D2814; color: #fff; }
+  .pass .t { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 18px; color: var(--accent-soft); }
+  .pass b { display: block; margin-top: 26px; font-size: 56px; font-weight: 800; letter-spacing: -0.04em; }
+  .pass span { display: block; margin-top: 6px; font-size: 22px; color: var(--muted); font-weight: 700; }
+  .lockv { display: flex; align-items: center; gap: 22px; height: 104px; padding: 0 34px; border-radius: 24px; background: #0A0A0B; color: #fff; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; }
+  .lockv .ico { width: 54px; height: 54px; color: var(--accent); stroke-width: 2.2; }
+
+  /* soon */
+  #rep { position: absolute; inset: -80px; transform: rotate(-8deg); display: flex; flex-direction: column; gap: 6px; }
+  #rep div { white-space: nowrap; font-size: 92px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+  #rep div.o { color: transparent; -webkit-text-stroke: 2px rgba(10, 10, 11, 0.35); }
+  #rep div.f { color: rgba(10, 10, 11, 0.9); }
+  #badge { position: absolute; left: 50%; top: 50%; display: flex; flex-direction: column; align-items: center; padding: 34px 56px 30px; border-radius: 38px; background: #0A0A0B; color: #fff; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.7); }
+  #badge .top { display: flex; align-items: center; gap: 22px; }
+  #badge .mark { font-size: 120px; color: #fff; } #badge .mark b { color: var(--accent); }
+  #badge .wm { font-size: 96px; font-weight: 800; letter-spacing: -0.06em; } #badge .wm span { color: #6E6C66; }
+  #badge p { margin: 10px 0 0; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; color: var(--accent); }
+</style></head>
+<body><div class="stage" id="stage"></div>
+<script>
+  const stage = $('stage');
+  const W = 590, H = 330; // the chart, inside a card
+  const money = (v) => (v >= 1000 ? `$${(v / 1000).toFixed(1)}K` : `$${Math.round(v)}`);
+  const AV = ['#FF8A1F', '#36D399', '#6CC4FF', '#C7A5FF', '#F2D04B', '#FF6B78'];
+
+  // a deterministic candle series: [open, close] in market cap
+  function series(steps) {
+    let v = steps[0][1], out = [], s = 7;
+    const r = () => { s = (s * 16807) % 2147483647; return s / 2147483647 - 0.5; };
+    for (const [n, to, jit = 0.04] of steps.slice(1)) {
+      for (let k = 0; k < n; k++) { const o = v; v = v + (to - v) / (n - k) + r() * jit * v; out.push([o, v]); }
+    }
+    return out;
+  }
+  function chart(svg, candles, shown, { min, max, tag = true, marks = [], bondAt = null } = {}) {
+    const n = candles.length, cw = (W - 120) / n, y = (v) => 20 + (1 - (v - min) / (max - min)) * (H - 40);
+    let h = '';
+    for (let g = 0; g < 4; g++) h += `<line x1="18" x2="${W - 90}" y1="${30 + g * 85}" y2="${30 + g * 85}" stroke="#222226" stroke-width="1"/>`;
+    const k = Math.floor(shown), f = shown - k;
+    for (let i = 0; i < Math.min(n, k + 1); i++) {
+      let [o, c] = candles[i];
+      if (i === k) { if (f <= 0) break; c = o + (c - o) * f; }
+      const up = c >= o, x = 24 + i * cw, y1 = y(Math.max(o, c)), y2 = y(Math.min(o, c));
+      h += `<rect x="${x}" y="${y1}" width="${Math.max(3, cw * 0.62)}" height="${Math.max(3, y2 - y1)}" rx="2" fill="${up ? '#36D399' : '#FF5C6A'}"/>`;
+    }
+    if (bondAt != null && shown >= bondAt) { const x = 24 + bondAt * cw; h += `<line x1="${x}" x2="${x}" y1="14" y2="${H - 10}" stroke="#F2D04B" stroke-width="2" stroke-dasharray="6 6"/><rect x="${x - 40}" y="2" width="80" height="22" rx="6" fill="#F2D04B"/><text x="${x}" y="18" text-anchor="middle" font-size="13" font-weight="800" fill="#0A0A0B" font-family="Sora">Bonded</text>`; }
+    for (const m of marks) if (shown >= m.at) { const x = 24 + m.at * cw + 4, yy = y(candles[Math.min(n - 1, Math.floor(m.at))][1]) - 26; h += `<g transform="translate(${x} ${yy})"><circle r="15" fill="${m.c}" stroke="#0A0A0B" stroke-width="3"/>${m.x ? `<circle r="15" fill="none" stroke="#FF5C6A" stroke-width="3"/><line x1="-10" y1="10" x2="10" y2="-10" stroke="#FF5C6A" stroke-width="3.5"/>` : ''}</g>`; }
+    if (tag && shown > 0.2) {
+      const last = candles[Math.min(n - 1, k)], v = k < n ? last[0] + (last[1] - last[0]) * (k === Math.min(n - 1, k) ? f : 1) : last[1], yy = y(v);
+      h += `<line x1="18" x2="${W - 90}" y1="${yy}" y2="${yy}" stroke="#F2D04B" stroke-width="1.5" stroke-dasharray="4 5"/><rect x="${W - 86}" y="${yy - 12}" width="72" height="24" rx="6" fill="#F2D04B"/><text x="${W - 50}" y="${yy + 5}" text-anchor="middle" font-size="13" font-weight="800" fill="#0A0A0B" font-family="Sora">${money(v)}</text>`;
+    }
+    svg.innerHTML = h;
+  }
+  // a coin page scene, built once; returned handles are filled in by render
+  function coinScene(id, cls, c) {
+    const el = document.createElement('div');
+    el.className = `sc ${cls}`; el.id = id;
+    el.innerHTML = `<div class="cl"><div class="coin"><span class="av" style="background:${c.color}">${c.letter}</span><span><b>$${c.ticker}</b><span>${c.name}</span></span></div>
+      <div class="capk">Market cap</div><div class="cap"><b class="v"></b><span class="ch"></span></div>
+      <div class="bond"><div class="r"><span class="bk"></span><span class="bt">${c.bondsAt || 'Bonds at 85 SOL'}</span></div><div class="t"><i></i></div></div>
+      <div class="lab"><span class="lt"></span><span class="strike"></span></div><div class="sub"></div><div class="tm"></div></div>
+      <div class="card"><span class="h">Market cap, live</span><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"></svg><div class="rows"></div></div>`;
+    stage.appendChild(el);
+    const q = (s) => el.querySelector(s);
+    return { el, v: q('.v'), ch: q('.ch'), bk: q('.bk'), bt: q('.bt'), bar: q('.bond i'), lab: q('.lab'), lt: q('.lt'), strike: q('.strike'), sub: q('.sub'), tm: q('.tm'), svg: q('svg'), rows: q('.rows'), c };
+  }
+  const row = (a, who, what, pill, cls) => `<div class="row"><span class="a" style="background:${a}"></span><b>${who}</b><span>${what}</span><i class="pill ${cls}">${pill}</i></div>`;
+  function setCap(s, v, base) { s.v.textContent = money(v); const p = Math.round((v / base - 1) * 100); s.ch.textContent = `${p >= 0 ? '+' : ''}${p}%`; s.ch.style.color = p >= 0 ? (s.el.classList.contains('amber') ? '#0A0A0B' : 'var(--green)') : 'var(--red)'; }
+  const on = (el, t, a, b) => { el.style.visibility = t >= a && t < b ? 'visible' : 'hidden'; };
+  function pop(el, t, a, { from = 1.5, d = 0.3, y = 0 } = {}) { const p = seg(t, a, a + d); el.style.opacity = clamp(p * 2.4); el.style.transform = `translateY(${y * (1 - ease(p))}px) scale(${p <= 0 ? from : from + (1 - from) * back(p)})`; }
+  function slide(el, t, a, { x = 0, y = 0, d = 0.35 } = {}) { const p = seg(t, a, a + d), e = back(p); el.style.opacity = clamp(p * 3); el.style.transform = `translate(${x * (1 - e)}px, ${y * (1 - e)}px)`; }
+
+  // ---------------------------------------------------------------- 1: four launches, four ways to die
+  const PROBS = [
+    { ticker: 'SAFU', name: 'Totally Safu', letter: 'S', color: '#FF8A1F', label: 'Snipers.', sub: 'Bots bought block 0, then sold on you.', who: 'Sniper bot', amt: ['0.49', '0.58', '0.54'],
+      s: series([[0, 3000], [9, 21000, 0.03], [2, 3400, 0.02], [2, 2900, 0.02]]), base: 3000, pumpN: 9 },
+    { ticker: 'GEM', name: 'Hidden Gem', letter: 'G', color: '#36D399', label: 'Bundles.', sub: 'Twenty wallets, one owner, one sell.', who: 'Bundle wallet', amt: ['2.15', '1.48', '3.70'],
+      s: series([[0, 3000], [9, 24000, 0.03], [2, 3600, 0.02], [2, 3300, 0.02]]), base: 3000, pumpN: 9 },
+    { ticker: 'ALPHA', name: 'Alpha Call', letter: 'A', color: '#C7A5FF', label: 'KOL dumps.', sub: 'Called at 9:00. Sold at 9:05.', who: 'KOL wallet', amt: ['2.03', '2.60', '4.75'],
+      s: series([[0, 5000], [8, 23000, 0.03], [3, 3200, 0.02], [2, 3000, 0.02]]), base: 5000, pumpN: 8 },
+    { ticker: 'HONEST', name: 'Honest Dev', letter: 'H', color: '#6CC4FF', label: 'Dev sells.', sub: 'The dev’s bag, gone in one candle.', who: 'Dev wallet', amt: ['97.0', '0.16', ''],
+      s: series([[0, 4000], [10, 26000, 0.02], [1, 1300, 0], [2, 1200, 0.01]]), base: 4000, pumpN: 10 },
+  ];
+  const P0 = 0, PD = 1.95;
+  const probs = PROBS.map((p, i) => { const s = coinScene(`p${i}`, 'black', p); s.lt.textContent = p.label; s.sub.textContent = p.sub; return s; });
+
+  // ---------------------------------------------------------------- 2: the turn
+  const TB = P0 + PROBS.length * PD; // 7.8
+  stage.insertAdjacentHTML('beforeend', `
+    <div class="sc black" id="tb1"><svg id="bgc" viewBox="0 0 1200 675"></svg><div id="tb" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding-left:80px"><h2 class="big"><span class="w">Every</span> <span class="w">launch</span><br><span class="w">ends</span> <span class="w">the</span> <span class="w">same.</span></h2></div></div>
+    <div class="sc amber" id="tb2" style="display:flex;flex-direction:column;justify-content:center;padding-left:80px"><h2 class="big" style="font-size:136px"><span class="w">Unless</span> <span class="w">it</span> <span class="w">has</span><br><span class="w em">rules.</span></h2></div>
+    <div class="sc amber" id="tb3"><div id="logo" style="position:absolute;inset:0"><span class="mark w"><b>{</b>s<b>}</b></span><span class="wm w">strict<span>.fun</span></span></div></div>`);
+  // faint dumping charts behind the line
+  { let h = ''; [[60, 300, 0], [640, 260, 1], [300, 520, 2]].forEach(([x0, y0, k]) => { for (let i = 0; i < 14; i++) { const up = i < 10, hgt = up ? 18 + i * 3 : 70; const y1 = up ? y0 - i * 16 : y0 - 160 + (i - 10) * 40; h += `<rect x="${x0 + i * 30}" y="${y1}" width="18" height="${hgt}" fill="${up ? '#36D399' : '#FF5C6A'}"/>`; } }); $('bgc').innerHTML = h; }
+  const T = { tb1: TB, tb2: TB + 1.9, tb3: TB + 3.3, k1: TB + 4.7 };
+
+  // ---------------------------------------------------------------- 3: the rules at work on a live coin
+  stage.insertAdjacentHTML('beforeend', `<div class="sc black ttl" id="k1"><h2 class="big"><span class="w">KOLs?</span><br><span class="w em">Bounced.</span></h2><p class="w">Pick any wallets. They can’t buy until your coin bonds.</p></div>`);
+  const KD = T.k1 + 1.5; // the demo
+  const kol = coinScene('kd', 'amber', { ticker: 'GAVEL', name: 'Gavel', letter: 'G', color: '#0A0A0B' });
+  kol.el.querySelector('.coin .av').style.color = '#FF8A1F';
+  const KS = series([[0, 9000], [26, 64000, 0.025], [6, 82000, 0.03]]);
+  const KOLS = [['ansem.sol', '#C7A5FF', 18], ['cented', '#6CC4FF', 25], ['frank', '#FF6B78', 12]];
+  const KMARKS = [{ at: 6, c: '#C7A5FF', x: 1 }, { at: 11, c: '#6CC4FF', x: 1 }, { at: 16, c: '#FF6B78', x: 1 }, { at: 28, c: '#C7A5FF', x: 0 }, { at: 29.5, c: '#6CC4FF', x: 0 }];
+  const SN = KD + 6.2; // snipers
+  stage.insertAdjacentHTML('beforeend', `<div class="sc black ttl" id="s1"><h2 class="big"><span class="w">Snipers</span><br><span class="w em">pay 99%.</span></h2><p class="w">The fee falls to 1% in the first minute.</p></div>`);
+  const snp = coinScene('sd', 'black', { ticker: 'FAIR', name: 'Fair Go', letter: 'F', color: '#F2D04B' });
+  const SS = series([[0, 5200], [1, 5600, 0], [10, 14000, 0.03]]);
+  const SD = SN + 1.4;
+
+  // ---------------------------------------------------------------- 4: a card per rule
+  const QS = SD + 4.2;
+  const QC = [
+    { cls: 'amber', head: 'The dev <span class="em">can’t buy.</span>', vis: `<div class="wal"><span class="a">${icon('dev')}</span><span><b>Creator wallet</b><span>tried to buy 5 SOL</span></span><i class="pill p-red">Refused</i></div>` },
+    { cls: 'black', head: 'Nothing buys in <span class="em">block 0.</span>', vis: `<div class="blocks">${[0, 1, 2, 3, 4].map((b) => `<div class="blk${b ? '' : ' z'}" id="bk${b}">${b ? '' : `<div class="lk">${icon('lock')}</div>`}<small>${b ? `block ${b}` : '0 buys'}</small></div>`).join('')}</div>` },
+    { cls: 'amber', head: 'Max wallet, <span class="em">your pick.</span>', vis: `<div class="capbox"><div class="r"><span>Biggest wallet</span><span id="capv">0%</span></div><div class="tr"><i id="capi"></i><span class="cl2" style="left:80%"></span></div></div>` },
+    { cls: 'black', head: 'One coin, <span class="em">one name.</span>', vis: `<div class="tk"><div class="t live">$GAVEL <small>Live</small></div><div class="t copy" id="cpy">$GAV3L <small>Refused</small></div></div>` },
+    { cls: 'amber', head: 'Dev pass: <span class="em">fees on an NFT.</span>', vis: `<div class="pass"><div class="t"><span>{s} strict.fun</span><span>1 of 1</span></div><b>DEV PASS $GAVEL</b><span>Whoever holds it gets the creator fees.</span></div>` },
+    { cls: 'black', head: 'Rules lock <span class="em">at launch.</span>', vis: `<div class="lockv" style="background:#141416;border:2px solid #26262B">${icon('lock')}Nobody can change them. Not us.</div>` },
+  ];
+  const QD = 1.75;
+  QC.forEach((q, i) => stage.insertAdjacentHTML('beforeend', `<div class="sc ${q.cls} qc" id="q${i}"><h2 class="big">${q.head}</h2><div class="qv">${q.vis}</div><div class="dash">${QC.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div></div>`));
+  QC.forEach((q, i) => { const h = $(`q${i}`).querySelector('.big'); let fs = 110; h.style.fontSize = `${fs}px`; document.fonts.ready.then(() => { while (h.offsetHeight > fs * 2.1 && fs > 70) { fs -= 2; h.style.fontSize = `${fs}px`; } }); });
+
+  // ---------------------------------------------------------------- 5: soon
+  const EN = QS + QC.length * QD;
+  stage.insertAdjacentHTML('beforeend', `<div class="sc amber" id="en"><div id="rep">${Array.from({ length: 9 }, (_, i) => `<div class="${i % 2 ? 'o' : 'f'}" id="rp${i}">${'Strict can be fun. '.repeat(6)}</div>`).join('')}</div>
+    <div id="badge"><div class="top"><span class="mark"><b>{</b>s<b>}</b></span><span class="wm">strict<span>.fun</span></span></div><p>Soon.</p></div></div>`);
+  window.TOTAL = EN + 3.6;
+
+  window.render = function (t) {
+    // 1: four launches
+    PROBS.forEach((p, i) => {
+      const a = P0 + i * PD, s = probs[i];
+      on(s.el, t, a, a + PD);
+      if (t < a || t >= a + PD) return;
+      const n = p.s.length, pumpEnd = p.pumpN;
+      // the first launch is already pumping on frame one (it's the GIF's still), the dump comes on the same beat in all four
+      const shown = i === 0 ? Math.min(n, 6.5 + ((t - a) / 1.15) * (n - 6.5)) : clamp((t - a + 0.05) / 1.15, 0, 1) * n;
+      chart(s.svg, p.s, shown, { min: 0, max: Math.max(...p.s.map((c) => Math.max(...c))) * 1.08 });
+      const k = Math.min(n - 1, Math.floor(shown)), cur = p.s[k][0] + (p.s[k][1] - p.s[k][0]) * (shown - Math.floor(shown));
+      // the change is from launch while it pumps, and from the top once it dumps (that's the loss people feel)
+      const peak = Math.max(...p.s.slice(0, p.pumpN).map((c) => c[1]));
+      setCap(s, cur, shown >= p.pumpN ? peak : p.base);
+      const bp = Math.min(31, (cur / 82000) * 100);
+      s.bk.textContent = `Bonding ${Math.round(bp)}%`; s.bar.style.width = `${bp}%`;
+      const dumped = shown >= pumpEnd;
+      s.strike.style.width = `${ease(seg(t, a + 1.25, a + 1.45)) * 104}%`;
+      s.lt.style.color = dumped ? 'var(--red)' : '';
+      s.sub.style.opacity = clamp((t - a - 1.3) * 4);
+      const sold = p.amt.filter(Boolean).filter((_, j) => t > a + 1.2 + j * 0.12);
+      s.rows.innerHTML = sold.map((amt, j) => row(AV[(i + j) % 6], p.who, `sold ${amt} SOL`, 'Sold', 'p-red')).join('');
+    });
+
+    // 2: the turn
+    on($('tb1'), t, T.tb1, T.tb2); $('tb1').querySelectorAll('.w').forEach((el, k) => pop(el, t, T.tb1 + 0.1 + k * 0.13));
+    $('bgc').style.transform = `translateX(${-(t - T.tb1) * 30}px)`;
+    on($('tb2'), t, T.tb2, T.tb3); $('tb2').querySelectorAll('.w').forEach((el, k) => pop(el, t, T.tb2 + 0.08 + k * 0.13, { from: el.classList.contains('em') ? 2.4 : 1.5 }));
+    on($('tb3'), t, T.tb3, T.k1); $('tb3').querySelectorAll('.w').forEach((el, k) => pop(el, t, T.tb3 + 0.05 + k * 0.18, { from: k ? 1.4 : 0.3, d: 0.4 }));
+
+    // 3a: KOLs bounced until it bonds
+    on($('k1'), t, T.k1, KD); $('k1').querySelectorAll('.w').forEach((el, k) => (el.tagName === 'P' ? slide(el, t, T.k1 + 0.5, { y: 30 }) : pop(el, t, T.k1 + 0.08 + k * 0.2)));
+    on(kol.el, t, KD, SN);
+    if (t >= KD && t < SN) {
+      const n = KS.length, shown = clamp((t - KD) / 5.2, 0, 1) * n, bondAt = 26;
+      chart(kol.svg, KS, shown, { min: 0, max: 90000, marks: KMARKS, bondAt });
+      const k = Math.min(n - 1, Math.floor(shown)), cur = KS[k][0] + (KS[k][1] - KS[k][0]) * (shown - k);
+      setCap(kol, cur, 9000);
+      const bonded = shown >= bondAt, bp = bonded ? 100 : Math.min(99, (shown / bondAt) * 100);
+      kol.bk.textContent = bonded ? 'Bonded' : `Bonding ${Math.round(bp)}%`; kol.bt.textContent = bonded ? 'Trading on Raydium' : 'Bonds at 85 SOL'; kol.bar.style.width = `${bp}%`;
+      const phase = shown < 27 ? 0 : shown < 28.5 ? 1 : 2;
+      kol.lt.textContent = ['Bounced.', 'List closed.', 'Now they can buy.'][phase];
+      kol.lab.classList.toggle('stamped', phase === 0 && shown >= 6);
+      kol.lab.style.opacity = shown >= 6 || phase ? 1 : 0;
+      kol.sub.textContent = ['Every listed wallet, refused on chain.', 'It bonded, so the list is gone.', 'On Raydium, like anyone.'][phase];
+      kol.sub.style.opacity = kol.lab.style.opacity;
+      kol.strike.style.width = '0';
+      const tried = KOLS.filter((_, j) => shown >= [6, 11, 16][j]);
+      kol.rows.innerHTML = phase < 2 ? tried.slice().reverse().map(([w, c, s]) => row(c, w, `tried to buy ${s} SOL`, 'Bounced', 'p-red')).join('')
+        : KOLS.slice(0, 2).map(([w, c, s]) => row(c, w, `bought ${s} SOL`, 'Buy', 'p-green')).join('');
+    }
+
+    // 3b: snipers pay 99%
+    on($('s1'), t, SN, SD); $('s1').querySelectorAll('.w').forEach((el, k) => (el.tagName === 'P' ? slide(el, t, SN + 0.5, { y: 30 }) : pop(el, t, SN + 0.08 + k * 0.2)));
+    on(snp.el, t, SD, QS);
+    if (t >= SD && t < QS) {
+      const n = SS.length, shown = clamp((t - SD) / 3.4, 0, 1) * n;
+      chart(snp.svg, SS, shown, { min: 0, max: 16000 });
+      const k = Math.min(n - 1, Math.floor(shown)), cur = SS[k][0] + (SS[k][1] - SS[k][0]) * (shown - k);
+      setCap(snp, cur, 5200);
+      const bp = (cur / 82000) * 100; snp.bk.textContent = `Bonding ${Math.round(bp)}%`; snp.bar.style.width = `${bp}%`;
+      const secs = (t - SD) * 18, fee = Math.max(1, Math.round(99 - 98 * Math.min(1, secs / 60)));
+      snp.lt.textContent = `Fee ${fee}%`;
+      snp.lt.style.color = fee > 50 ? 'var(--red)' : fee > 5 ? 'var(--accent)' : 'var(--green)';
+      snp.sub.textContent = 'What snipers pay buys back and burns the coin at bond.';
+      snp.tm.innerHTML = `<span class="timer"><small>Since launch</small><b>0:${String(Math.floor(secs)).padStart(2, '0')}.${String(Math.floor((secs % 1) * 100)).padStart(2, '0')}</b></span>`;
+      const ev = [[0.1, '#FF6B78', 'Sniper bot', 'bought 2 SOL at a 99% fee', 'Taxed', 'p-amber'], [1.4, '#C7A5FF', 'Sniper bot', 'bought 1 SOL at a 61% fee', 'Taxed', 'p-amber'], [2.6, '#36D399', 'anon', 'bought 1 SOL at 1%', 'Buy', 'p-green']];
+      snp.rows.innerHTML = ev.filter(([at]) => t - SD >= at).reverse().map(([, c, w, x, p, cls]) => row(c, w, x, p, cls)).join('');
+    }
+
+    // 4: a card per rule
+    QC.forEach((q, i) => {
+      const a = QS + i * QD, el = $(`q${i}`);
+      on(el, t, a, a + QD);
+      if (t < a || t >= a + QD) return;
+      slide(el.querySelector('.big'), t, a, { x: -120, d: 0.35 });
+      slide(el.querySelector('.qv'), t, a + 0.15, { y: 90, d: 0.4 });
+      if (i === 1) [1, 2, 3, 4].forEach((b) => { const nfill = Math.floor(clamp((t - a - 0.3) * 2.2 - (b - 1) * 0.15) * (3 + (b % 2))); $(`bk${b}`).innerHTML = `${Array.from({ length: nfill }, (_, k) => `<i style="bottom:${40 + k * 28}px"></i>`).join('')}<small>block ${b}</small>`; });
+      if (i === 2) { const p = ease(seg(t, a + 0.3, a + 1.1)), v = Math.min(80, p * 96); $('capi').style.width = `${v}%`; $('capi').style.background = p * 96 >= 80 ? 'var(--red)' : 'var(--accent)'; $('capv').textContent = p * 96 >= 80 ? '2% cap: stopped' : `${(v / 40).toFixed(1)}%`; }
+      if (i === 3) slide($('cpy'), t, a + 0.55, { x: 200, d: 0.35 });
+    });
+
+    // 5: soon
+    on($('en'), t, EN, 99);
+    for (let i = 0; i < 9; i++) $(`rp${i}`).style.transform = `translateX(${(i % 2 ? -1 : 1) * (t - EN) * 60 - 300}px)`;
+    const p = seg(t, EN + 0.1, EN + 0.55);
+    $('badge').style.transform = `translate(-50%, -50%) scale(${p <= 0 ? 0.3 : 0.3 + 0.7 * back(p)})`;
+    $('badge').style.opacity = clamp(p * 3);
+  };
+  document.fonts.ready.then(() => window.render(0));
+  window.render(0);
+</script>
+</body></html>

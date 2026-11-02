@@ -1,0 +1,22 @@
+node_modules
+web/dist
+.wrangler
+.dev.vars
+keys/
+program/target
+program/test-ledger
+*.log
+.DS_Store
+
+# rendered brand media: scripts/render-brand.mjs and scripts/warmup-music.mjs make them again
+brand/*.mp4
+brand/*.gif
+brand/*.wav
+brand/higgs/*.jpg
+brand/higgs/*.mp4
+brand/src/code.js
+# drafts and internal notes
+brand/prototypes/
+brand/themes/
+brand/tweets.md
+node_modules/.cache/

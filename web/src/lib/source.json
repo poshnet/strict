@@ -1,0 +1,78 @@
+{
+ "head": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 420,
+   "code": "fn buy(a: &[AccountInfo], sol_in: u64, min_out: u64) -> ProgramResult {\n    let x = trade_accounts(a)?;\n    let mut c = x.c;\n    ok(sol_in > 0, E::Zero)?;"
+  }
+ ],
+ "kols": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 428,
+   "code": "    // no KOLs: a binary search over the sealed list\n    if c.blocked > 0 {\n        pda_is(x.list, &[b\"list\", c.mint.as_ref(), &[c.list_bump]])?;\n        ok(!listed(x.list, x.user.key)?, E::Bounced)?;\n    }"
+  },
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 154,
+   "code": "/// Is `who` on the coin's sealed list? A binary search over the sorted wallets, read straight from the account.\nfn listed(list: &AccountInfo, who: &Pubkey) -> Result<bool, ProgramError> {\n    let l = List::load(list)?;\n    ok(l.sealed, E::ListMismatch)?;\n    let d = list.try_borrow_data()?;\n    let key = who.as_ref();\n    let (mut lo, mut hi) = (0usize, l.count as usize);\n    while lo < hi {\n        let mid = (lo + hi) / 2;\n        let o = LIST_HEADER + 32 * mid;\n        match d[o..o + 32].cmp(key) {\n            core::cmp::Ordering::Equal => return Ok(true),\n            core::cmp::Ordering::Less => lo = mid + 1,\n            core::cmp::Ordering::Greater => hi = mid,\n        }\n    }\n    Ok(false)\n}"
+  }
+ ],
+ "snipers": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 434,
+   "code": "    // no snipers: the shield is for snipers: the creator's own buys (their first buy rides in the launch transaction) pay the normal fee\n    let f = if x.user.key == &c.creator { c.fee_bps as u64 + c.creator_fee_bps as u64 } else { fee_now(&c, t) };"
+  },
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 136,
+   "code": "/// The fee on a trade right now, in basis points of its SOL: the coin's normal fee, or its snipe shield while that's\n/// higher (99% at launch, down to the normal fee after `shield_secs`).\npub fn fee_now(c: &Curve, t: i64) -> u64 {\n    let base = c.fee_bps as u64 + c.creator_fee_bps as u64;\n    let age = t.saturating_sub(c.created_at).max(0) as u64;\n    let secs = c.shield_secs as u64;\n    if c.shield_kind == 0 || age >= secs { return base; }\n    let s = if c.shield_kind == 1 {\n        base + (SHIELD_START - base) * (secs - age) / secs\n    } else {\n        let f = SHIELD_EXP[(secs - 5) as usize] as u128;\n        let mut x = SHIELD_START as u128 * 1_000_000_000;\n        for _ in 0..age { x = x * f / 1_000_000_000; }\n        (x / 1_000_000_000) as u64\n    };\n    s.max(base)\n}"
+  }
+ ],
+ "dev": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 424,
+   "code": "    // no dev buy: the creator can't buy before it bonds\n    if c.no_dev_buy { ok(x.user.key != &c.creator, E::DevBuy)?; }"
+  }
+ ],
+ "bundles": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 426,
+   "code": "    // no bundles: nothing buys in the launch slot\n    if c.no_bundles { ok(slot()? > c.created_slot, E::Bundled)?; }"
+  }
+ ],
+ "maxWallet": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 449,
+   "code": "    // max wallet: no wallet past the cap until it bonds\n    if c.max_wallet_bps > 0 { ok(x.held + out <= mul_div(c.token_supply, c.max_wallet_bps as u64, BPS)?, E::OverCap)?; }"
+  }
+ ],
+ "vamps": [
+  {
+   "file": "worker/vamp.js",
+   "start": 26,
+   "code": "export function vampKey(s) {\n  const raw = String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/^\\$+/, '');\n  let x = [...raw].map((ch) => LOOK[ch] ?? ch).join('').replace(/rn/g, 'm').replace(/vv/g, 'w');\n  x = x.replace(/[^a-z]/g, '').replace(/(.)\\1+/g, '$1');\n  return x || raw.replace(/\\s+/g, ''); // a ticker with no Latin letters (中文, emoji) is kept as written\n}"
+  },
+  {
+   "file": "worker/vamp.js",
+   "start": 74,
+   "code": "export async function vampCheck(env, c, { symbol, name, twitter, imgHash }) {\n  const out = { ticker: { ok: true, reason: null }, name: { ok: true, reason: null }, x: null, picture: null };\n  const tk = symbol ? vampKey(symbol) : null;\n  const nk = name ? vampKey(name) : null;\n  const taken = async (key) => {\n    const s = stems(key);\n    const marks = s.map(() => '?').join(',');\n    return env.DB.prepare(`SELECT mint, symbol FROM coins WHERE ${PROTECTED} AND (ticker_key IN (${marks}) OR name_key IN (${marks})) LIMIT 1`)\n      .bind(...s, ...s).first();\n  };\n  const reserved = new Set(RESERVED);\n  if (tk) {\n    const hit = await taken(tk);\n    if (hit) out.ticker = { ok: false, reason: `too close to $${hit.symbol}`, mint: hit.mint };\n    else if (reserved.has(tk)) out.ticker = { ok: false, reason: 'reserved: a big coin uses it' };\n  }\n  if (nk) {\n    const hit = await taken(nk);\n    if (hit) out.name = { ok: false, reason: `too close to $${hit.symbol}`, mint: hit.mint };\n  }\n  if (twitter) {\n    const k = xKey(twitter);\n    if (!k) out.x = { ok: false, reason: \"that isn't an X account link\" };\n    else {\n      const hit = await env.DB.prepare(`SELECT mint, symbol FROM coins WHERE ${PROTECTED} AND x_key = ? LIMIT 1`).bind(k).first();\n      out.x = hit ? { ok: false, reason: `already used by $${hit.symbol}`, mint: hit.mint } : { ok: true, reason: null };\n    }\n  }\n  if (imgHash) {\n    if (!/^[0-9a-f]{16}$/.test(imgHash)) out.picture = { ok: false, reason: \"couldn't read the picture\" };\n    else if (plain(imgHash)) out.picture = { ok: true, reason: 'too plain to fingerprint' };\n    else {\n      const hit = (await hashes(env)).find((h) => hamming(h.img_hash, imgHash) <= SAME_PICTURE);\n      out.picture = hit ? { ok: false, reason: `that's $${hit.symbol}'s picture`, mint: hit.mint } : { ok: true, reason: null };\n    }\n  }\n  return out;\n}"
+  }
+ ],
+ "lock": [
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 332,
+   "code": "    if list.owner == &crate::ID && !list.data_is_empty() {\n        let mut l = List::load(list)?;\n        ok(l.mint == *mint.key && l.creator == *creator.key, E::ListMismatch)?;\n        ok(!l.sealed, E::Sealed)?;\n        l.sealed = true;\n        blocked = l.count;\n        {\n            let d = list.try_borrow_data()?;\n            list_hash = hashv(&[&d[LIST_HEADER..LIST_HEADER + 32 * l.count as usize]]).to_bytes();\n        }\n        l.store(list)?;\n    }"
+  },
+  {
+   "file": "program/programs/strict/src/lib.rs",
+   "start": 239,
+   "code": "    ok(!l.sealed, E::Sealed)?;"
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+/* What every strict.fun brand render shares: the night, the code, the type. Signal, as on the site (web/src/styles/app.css):
+   near-black, amber, Sora for words, JetBrains Mono for code; the {s} mark stays Geist Mono. */
+:root {
+  --bg: #0A0A0B; --panel: #131315; --deep: #0F0F11; --line: #26262A; --line2: #1F1F23;
+  --ink: #F4F3EF; --ink2: #D2D0C9; --muted: #9E9B94; --faint: #7A7872;
+  --accent: #FF8A1F; --accent-soft: #FFB46E; --chip: #1E140A; --chip-line: #3D2814;
+  --green: #36D399; --green-ink: #7BE3B9; --green-bg: #0D1A14; --green-line: #1C3A2C;
+  --red: #FF5C6A; --amber: #F2D04B;
+}
+html, body { margin: 0; padding: 0; overflow: hidden; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; font-variant-ligatures: none; }
+.stage { position: relative; overflow: hidden; background: var(--bg); font-family: 'Sora', system-ui, sans-serif; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+/* the mark: {s} with the braces in the accent */
+.mark { font-family: 'Geist Mono', monospace; font-weight: 600; letter-spacing: -0.08em; line-height: 1; color: var(--ink); white-space: nowrap; }
+.mark b, .wordmark b { color: var(--accent); font-weight: 600; }
+.wordmark { font-family: 'Geist Mono', monospace; font-weight: 600; letter-spacing: -0.04em; line-height: 1; white-space: nowrap; }
+/* faint source code behind things */
+.code-bg { position: absolute; font-family: 'JetBrains Mono', monospace; white-space: pre; color: #18181B; line-height: 1.7; pointer-events: none; }
+.glow { position: absolute; border-radius: 50%; filter: blur(60px); pointer-events: none; }
+.abs { position: absolute; will-change: transform, opacity; }
+/* a rule row: icon, name, plain sentence, switch */
+.switch { display: inline-flex; align-items: center; width: 44px; height: 26px; padding: 3px; box-sizing: border-box; border-radius: 999px; background: #2E2E33; }
+.switch i { width: 20px; height: 20px; border-radius: 50%; background: #fff; display: block; will-change: transform; }
+.pill { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.pill.green { background: var(--green-bg); border: 1px solid var(--green-line); color: var(--green-ink); }
+.pill.blue { background: var(--chip); border: 1px solid var(--chip-line); color: var(--accent-soft); }
+.pill.red { background: #251013; border: 1px solid #4A1E24; color: var(--red); }
+.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }

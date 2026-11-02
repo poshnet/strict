@@ -1,0 +1,342 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700&family=Geist+Mono:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="icons.js"></script><script src="shared.js"></script>
+<style>
+  /* The warm-up as an ad: square 1080 x 1080 (twice the room of 16:9 in a phone feed), ~28 s, silent, so the type does
+     all the work. A hook (a coin pumps, then dumps), the replies every launch gets, the question, a punchy card per
+     rule, the lock, the product (a real screen of the site, photographed on a desk), then soon. Every frame is placed by
+     render(t). Wallets, $ANYCOIN and $GAVEL are a demo, not real. */
+  .stage { width: 1080px; height: 1080px; background: #0A0A0B; }
+  #cam { position: absolute; inset: 0; }
+  .sc { position: absolute; inset: 0; overflow: hidden; visibility: hidden; }
+  .black { background: #0A0A0B; color: var(--ink); }
+  .amber { background: var(--accent); color: #0A0A0B; }
+  .tex { position: absolute; inset: -40px; background: url('../higgs/texture-steel-line.jpg') center / cover; opacity: 0.32; }
+  .tex::after { content: ''; position: absolute; inset: 0; background: radial-gradient(90% 70% at 50% 50%, rgba(10, 10, 11, 0.35), #0A0A0B 92%); }
+  .big { font-weight: 800; letter-spacing: -0.058em; line-height: 0.95; margin: 0; }
+  .w { display: inline-block; will-change: transform, opacity; }
+  .black .em { color: var(--accent); }
+  .amber .em { color: var(--accent); background: #0A0A0B; padding: 0 0.12em 0.05em; border-radius: 0.1em; }
+  #bar { position: absolute; left: 0; top: 0; height: 8px; background: #fff; opacity: 0.85; z-index: 20; }
+  #flash { position: absolute; inset: 0; background: var(--red); opacity: 0; z-index: 15; pointer-events: none; }
+  .wipe { position: absolute; left: 0; right: 0; height: 1080px; z-index: 12; }
+
+  /* 1: the hook */
+  #h1t { position: absolute; left: 80px; top: 96px; font-size: 128px; }
+  #chart { position: absolute; left: 0; top: 380px; width: 1080px; height: 620px; }
+  #pct { position: absolute; right: 80px; top: 300px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 120px; letter-spacing: -0.06em; color: var(--green); }
+  #dump { position: absolute; left: 0; right: 0; top: 520px; text-align: center; font-size: 300px; font-weight: 800; letter-spacing: -0.07em; color: var(--red); }
+
+  /* 2: the replies */
+  #rh { position: absolute; left: 80px; top: 96px; font-size: 104px; }
+  #rh .mut { color: var(--muted); }
+  .rep { position: absolute; left: 80px; width: 920px; box-sizing: border-box; display: flex; gap: 22px; align-items: center; padding: 22px 30px; border-radius: 30px; background: #18181B; border: 2px solid #2C2C31; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7); }
+  .rep .av { width: 68px; height: 68px; border-radius: 50%; flex: 0 0 auto; background: linear-gradient(140deg, #4A4A52, #1C1C20); }
+  .rep .tx { font-size: 50px; font-weight: 700; letter-spacing: -0.035em; color: #F4F3EF; }
+  .rep .tx b { color: var(--red); font-weight: 800; }
+
+  /* 3: the question */
+  #q { position: absolute; left: 80px; top: 250px; font-size: 156px; line-height: 1.02; }
+
+  /* 4: a card per rule */
+  .chip { position: absolute; left: 80px; top: 90px; display: inline-flex; align-items: center; gap: 14px; height: 70px; padding: 0 28px; border-radius: 999px; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+  .black .chip { background: #1E140A; border: 3px solid #3D2814; color: var(--accent-soft); }
+  .amber .chip { background: #0A0A0B; color: var(--accent); }
+  .chip .ico { width: 34px; height: 34px; stroke-width: 2.4; }
+  .card .big { position: absolute; left: 80px; top: 200px; width: 920px; }
+  .vis { position: absolute; left: 80px; right: 80px; bottom: 80px; height: 400px; border-radius: 36px; box-sizing: border-box; padding: 40px 46px; overflow: hidden; }
+  .black .vis { background: #17171A; border: 3px solid #2A2A2F; }
+  .amber .vis { background: #0A0A0B; color: var(--ink); }
+  .lab { font-size: 34px; font-weight: 700; color: var(--muted); letter-spacing: -0.02em; }
+  .fee { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 210px; letter-spacing: -0.08em; line-height: 1; margin-top: 8px; }
+  .feebar { position: absolute; left: 46px; right: 46px; bottom: 46px; height: 34px; border-radius: 999px; background: #2A2A2F; overflow: hidden; }
+  .feebar i { display: block; height: 100%; border-radius: 999px; }
+  .wal { display: flex; align-items: center; gap: 24px; }
+  .wal .av { width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(140deg, #4A3A2A, #1E140A); color: var(--accent-soft); flex: 0 0 auto; }
+  .wal .av .ico { width: 46px; height: 46px; stroke-width: 2; }
+  .wal b { display: block; font-size: 52px; letter-spacing: -0.035em; }
+  .wal span { font-size: 36px; font-weight: 600; color: var(--muted); letter-spacing: -0.02em; }
+  .stamp { position: absolute; left: 50%; top: 178px; padding: 14px 40px; border-radius: 22px; background: var(--red); color: #fff; font-size: 104px; font-weight: 800; letter-spacing: -0.045em; white-space: nowrap; box-shadow: 0 20px 60px -10px rgba(255, 92, 106, 0.55); }
+  .slots { display: flex; gap: 22px; margin-top: 26px; height: 240px; }
+  .slot { flex: 1; border-radius: 22px; border: 3px solid #2A2A2F; background: #0F0F11; position: relative; overflow: hidden; }
+  .slot .n { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-size: 26px; font-weight: 700; color: var(--faint); }
+  .slot i { position: absolute; left: 16px; right: 16px; height: 30px; border-radius: 8px; background: var(--green); }
+  .slot.zero { border-color: var(--red); background: #1F0E11; }
+  .slot.zero .lk { position: absolute; left: 0; right: 0; top: 46px; display: grid; place-items: center; color: var(--red); }
+  .slot.zero .lk .ico { width: 70px; height: 70px; stroke-width: 2.2; }
+  .slot.zero .n { color: var(--red); }
+  .bars { display: flex; flex-direction: column; gap: 30px; margin-top: 34px; position: relative; }
+  .bars .b { height: 56px; border-radius: 999px; background: #26262B; position: relative; }
+  .bars .b i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+  .capl { position: absolute; top: -20px; bottom: -20px; width: 0; border-left: 6px dashed var(--accent); }
+  .capt { position: absolute; right: 46px; top: 40px; font-size: 38px; font-weight: 800; letter-spacing: -0.02em; }
+  .tick { display: flex; flex-direction: column; gap: 22px; }
+  .tick .live { display: inline-flex; align-items: center; gap: 18px; font-size: 44px; font-weight: 800; letter-spacing: -0.03em; }
+  .tick .live .gv { width: 76px; height: 76px; border-radius: 18px; background: linear-gradient(140deg, #FF8A1F, #8A4510); display: grid; place-items: center; color: #160C03; font-size: 40px; }
+  .tick .live small { font-size: 30px; color: var(--green-ink); font-weight: 700; }
+  .copy { position: relative; display: inline-block; font-size: 130px; font-weight: 800; letter-spacing: -0.06em; line-height: 1; }
+  .copy .strike { position: absolute; left: -10px; top: 50%; height: 18px; border-radius: 9px; background: var(--red); }
+  .copyt { position: absolute; right: 46px; bottom: 56px; font-size: 40px; font-weight: 800; color: var(--red); letter-spacing: -0.02em; }
+
+  /* 5: the lock */
+  #lk { position: absolute; left: 80px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  #lk .big { font-size: 118px; }
+  #lockic { position: absolute; right: 80px; top: 120px; width: 150px; height: 150px; color: var(--accent); }
+  #lockic svg { width: 100%; height: 100%; stroke-width: 1.8; }
+
+  /* 6: the product */
+  #ph { position: absolute; inset: -60px; background: url('../higgs/mockup-phone-board.jpg') center 42% / cover; }
+  #phg { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 10, 11, 0) 45%, rgba(10, 10, 11, 0.92) 85%); }
+  #pht { position: absolute; left: 80px; bottom: 90px; font-size: 104px; }
+
+  /* 7: soon */
+  #end { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  #end .mark { font-size: 190px; color: #0A0A0B; }
+  #end .mark b { color: #fff; }
+  #end .big { font-size: 128px; margin-top: 40px; }
+  #end .row { display: flex; align-items: center; gap: 22px; margin-top: 50px; }
+  #end .wm { font-size: 58px; font-weight: 800; letter-spacing: -0.045em; }
+  #end .wm span { color: #5A3008; }
+  #end .soon { display: inline-flex; align-items: center; height: 76px; padding: 0 34px; border-radius: 999px; background: #0A0A0B; color: var(--accent); font-size: 38px; font-weight: 800; letter-spacing: -0.02em; }
+</style></head>
+<body><div class="stage" id="stage"><div id="cam">
+
+  <div class="sc black" id="s1">
+    <h1 class="big" id="h1t"><span class="w">Your</span> <span class="w">coin</span><br><span class="w">launched.</span></h1>
+    <span id="pct">+0%</span>
+    <svg id="chart" viewBox="0 0 1080 620"><defs><linearGradient id="fillg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#36D399" stop-opacity="0.35"/><stop offset="1" stop-color="#36D399" stop-opacity="0"/></linearGradient></defs>
+      <path id="area" d="" fill="url(#fillg)"/><path id="line" d="" fill="none" stroke="#36D399" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="big" id="dump">−93%</div>
+  </div>
+
+  <div class="sc black" id="s2"><div class="tex" id="tex2"></div>
+    <h2 class="big" id="rh"><span class="w">Every</span> <span class="w">launch.</span><br><span class="w mut">Same</span> <span class="w mut">replies.</span></h2>
+    <div id="reps"></div>
+  </div>
+
+  <div class="sc amber" id="s3"><h2 class="big" id="q"><span class="w">What</span> <span class="w">if</span> <span class="w">your</span><br><span class="w">coin</span> <span class="w">had</span><br><span class="w em" id="rules">rules?</span></h2></div>
+
+  <div id="cards"></div>
+
+  <div class="sc black" id="s5"><div class="tex" id="tex5"></div>
+    <div id="lockic"></div>
+    <div id="lk">
+      <h2 class="big w" id="l1">Picked at launch.</h2>
+      <h2 class="big w" id="l2">Locked on chain.</h2>
+      <h2 class="big w" id="l3"><span class="em">Checked on</span><br><span class="em">every buy.</span></h2>
+    </div>
+  </div>
+
+  <div class="sc black" id="s6"><div id="ph"></div><div id="phg"></div>
+    <h2 class="big" id="pht"><span class="w">Launch</span> <span class="w">with</span><br><span class="w em">rules.</span></h2>
+  </div>
+
+  <div class="sc amber" id="end">
+    <div class="mark w" id="mk"><b>{</b>s<b>}</b></div>
+    <h2 class="big"><span class="w">Strict</span> <span class="w">can</span> <span class="w">be</span> <span class="w">fun.</span></h2>
+    <div class="row w" id="erow"><span class="wm">strict<span>.fun</span></span><span class="soon" id="soon">Soon</span></div>
+  </div>
+
+  <div class="wipe" id="wipe"></div>
+</div>
+  <div id="flash"></div>
+  <div id="bar"></div>
+</div>
+<script>
+  // the timeline, on the music's grid (scripts/warmup-music.mjs: 106.67 bpm, so a beat is 0.5625 s and a bar, one
+  // rule card, is 2.25 s): every cut and every hit lands on a beat
+  const B = 0.5625;
+  const S = { hook: 0, reps: 5 * B, q: 10 * B, cards: 13 * B, CD: 4 * B };
+  S.lock = S.cards + 6 * S.CD; S.prod = S.lock + 4 * B; S.end = S.prod + 4 * B;
+  window.TOTAL = S.end + 6 * B;
+  // scene changes covered by a wipe: [time, colour]
+  const WIPES = [[S.reps, '#FF8A1F'], [S.q, '#0A0A0B'], ...[0, 1, 2, 3, 4, 5].map((i) => [S.cards + i * S.CD, i % 2 ? '#0A0A0B' : '#FF8A1F']), [S.lock, '#FF8A1F'], [S.prod, '#0A0A0B'], [S.end, '#0A0A0B']];
+
+  // 1: the chart, up then the dump
+  const UP = [[0, 560], [90, 540], [180, 500], [260, 470], [340, 410], [420, 380], [500, 300], [580, 250], [650, 170], [720, 110], [780, 60]];
+  const DOWN = [[780, 60], [810, 160], [850, 330], [900, 470], [960, 540], [1020, 565], [1080, 575]];
+  const path = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x},${y}`).join(' ');
+  const partial = (pts, p) => {
+    const n = (pts.length - 1) * clamp(p), k = Math.floor(n), f = n - k;
+    const out = pts.slice(0, k + 1);
+    if (k < pts.length - 1) out.push([pts[k][0] + (pts[k + 1][0] - pts[k][0]) * f, pts[k][1] + (pts[k + 1][1] - pts[k][1]) * f]);
+    return out;
+  };
+
+  // 2: the replies
+  const REPLIES = ['<b>sniped</b> in block 0. again.', 'dev <b>sold</b> in a minute', 'KOLs <b>got in first</b>', '<b>10 copies</b> by lunch'];
+  $('reps').innerHTML = REPLIES.map((x, i) => `<div class="rep" id="rp${i}" style="top:${380 + i * 150}px"><span class="av"></span><span class="tx">${x}</span></div>`).join('');
+
+  // 4: a card per rule (words: [text, accent?])
+  const CARDS = [
+    { id: 'snipers', name: 'No snipers', words: [['Snipers'], ['pay'], ['99%.', 1]],
+      vis: `<div class="lab">The fee, first seconds</div><div class="fee" id="fee">99%</div><div class="feebar"><i id="feebar"></i></div>` },
+    { id: 'kols', name: 'No KOLs', words: [['KOLs'], ["can’t", 1], ['buy.', 1]],
+      vis: `<div class="wal"><span class="av">${icon('kols')}</span><span><b>KOL wallet</b><span>buying 3 SOL</span></span></div><div class="stamp" id="st1">REFUSED</div>` },
+    { id: 'dev', name: 'No dev buy', words: [['The'], ['dev'], ["can’t", 1], ['buy.', 1]],
+      vis: `<div class="wal"><span class="av">${icon('dev')}</span><span><b>Creator wallet</b><span>buying 5 SOL</span></span></div><div class="stamp" id="st2">REFUSED</div>` },
+    { id: 'bundles', name: 'No bundles', words: [['Nothing'], ['buys'], ['in'], ['block', 1], ['0.', 1]],
+      vis: `<div class="lab">Buys per block</div><div class="slots">${[0, 1, 2, 3, 4].map((s) => `<div class="slot${s ? '' : ' zero'}" id="sl${s}">${s ? '' : `<div class="lk" id="lk0">${icon('lock')}</div>`}<span class="n">${s ? `block ${s}` : '0 buys'}</span></div>`).join('')}</div>` },
+    { id: 'maxWallet', name: 'Max wallet', words: [['Nobody'], ['holds'], ['the', 1], ['curve.', 1]],
+      vis: `<div class="lab">Biggest wallets</div><div class="capt" id="capt">2% cap</div><div class="bars"><div class="b"><i id="b0"></i></div><div class="b"><i id="b1"></i></div><div class="b"><i id="b2"></i></div><div class="capl" id="capl"></div></div>` },
+    { id: 'vamps', name: 'No vamps', words: [['No'], ['copycats.', 1]],
+      vis: `<div class="tick"><span class="live"><span class="gv">G</span>$GAVEL <small>● live</small></span><span class="copy">$GAV3L<span class="strike" id="strike"></span></span></div><div class="copyt" id="copyt">REFUSED</div>` },
+  ];
+  $('cards').innerHTML = CARDS.map((c, i) => `<div class="sc card ${i % 2 ? 'black' : 'amber'}" id="cd${i}">${i % 2 ? '<div class="tex"></div>' : ''}
+      <span class="chip">${icon(c.id)}${c.name}</span>
+      <h2 class="big">${c.words.map(([w, e], k) => `<span class="w${e ? ' em' : ''}" id="w${i}_${k}">${w}</span>`).join(' ')}</h2>
+      <div class="vis">${c.vis}</div></div>`).join('');
+  // each headline fills its width in at most two lines
+  function fit() {
+    CARDS.forEach((_, i) => {
+      const h = $(`cd${i}`).querySelector('.big');
+      let fs = 150;
+      h.style.fontSize = `${fs}px`;
+      while ((h.scrollWidth > 920 || h.offsetHeight > fs * 2.2) && fs > 80) { fs -= 2; h.style.fontSize = `${fs}px`; }
+    });
+  }
+  fit();
+  document.fonts.ready.then(fit);
+  $('lockic').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path id="shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+
+  // motion helpers: everything is a function of t
+  const on = (el, t, a, b) => { el.style.visibility = t >= a && t < b ? 'visible' : 'hidden'; };
+  /** a word or block slams in: from big and transparent to its place, with an overshoot */
+  function pop(el, t, a, { from = 1.6, d = 0.32, y = 0, rot = 0 } = {}) {
+    const p = seg(t, a, a + d);
+    el.style.opacity = clamp(p * 2.2);
+    const s = p <= 0 ? from : from + (1 - from) * back(p);
+    el.style.transform = `translateY(${y * (1 - ease(p))}px) rotate(${rot * (1 - ease(p))}deg) scale(${s})`;
+  }
+  /** slides in from a side with a little settle */
+  function slide(el, t, a, { x = 0, y = 0, d = 0.38, rot = 0 } = {}) {
+    const p = seg(t, a, a + d), e = back(p);
+    el.style.opacity = clamp(p * 3);
+    el.style.transform = `translate(${x * (1 - e)}px, ${y * (1 - e)}px) rotate(${rot * (1 - e)}deg)`;
+  }
+  const SHAKES = [], FLASHES = [];
+  const shakeAt = (a, amp = 18, dur = 0.35) => SHAKES.push([a, amp, dur]);
+  const flashAt = (a, o = 0.35) => FLASHES.push([a, o]);
+  const DUMP = 2 * B; // the first frame is already the pump (it's the thumbnail people scroll past), then it dumps here
+  shakeAt(DUMP, 26, 0.45); flashAt(DUMP, 0.4);
+  shakeAt(S.q + 2 * B, 14, 0.3);                                     // RULES?
+  shakeAt(S.cards + S.CD + 2 * B, 18); flashAt(S.cards + S.CD + 2 * B, 0.22);         // REFUSED (KOL)
+  shakeAt(S.cards + 2 * S.CD + 2 * B, 18); flashAt(S.cards + 2 * S.CD + 2 * B, 0.22); // REFUSED (dev)
+  shakeAt(S.cards + 4 * S.CD + 2 * B, 12);                           // the cap
+  shakeAt(S.cards + 5 * S.CD + 2 * B, 14);                           // the copycat
+  shakeAt(S.lock + 3 * B, 10);                                       // the lock clicks
+
+  window.render = function (t) {
+    // camera: shakes and a slow push
+    let sx = 0, sy = 0;
+    SHAKES.forEach(([a, amp, dur]) => { const p = seg(t, a, a + dur); if (p > 0 && p < 1) { const k = amp * Math.pow(1 - p, 2); sx += Math.sin(p * 47) * k; sy += Math.cos(p * 39) * k * 0.7; } });
+    $('cam').style.transform = `translate(${sx}px, ${sy}px)`;
+    $('flash').style.opacity = FLASHES.reduce((m, [a, o]) => Math.max(m, t >= a ? o * Math.pow(1 - seg(t, a, a + 0.28), 2) : 0), 0);
+    $('bar').style.width = `${(t / window.TOTAL) * 1080}px`;
+
+    // the wipe covering each scene change: up from the bottom, then off the top
+    const wipe = $('wipe');
+    const w = WIPES.find(([a]) => t > a - 0.24 && t < a + 0.24);
+    if (w) { const p = seg(t, w[0] - 0.24, w[0] + 0.24); wipe.style.background = w[1]; wipe.style.transform = `translateY(${(1 - inOut(p) * 2) * 1080}px)`; wipe.style.visibility = 'visible'; }
+    else wipe.style.visibility = 'hidden';
+
+    // 1: the hook
+    on($('s1'), t, 0, S.reps);
+    // frame one: the headline is up and the chart is well into its run; it keeps climbing, then dumps
+    $('s1').querySelectorAll('#h1t .w').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+    const up = 0.8 + 0.2 * ease(seg(t, 0, DUMP - 0.15)), down = inOut(seg(t, DUMP - 0.05, DUMP + 0.35));
+    const pts = down > 0 ? [...UP, ...partial(DOWN, down).slice(1)] : partial(UP, up);
+    $('line').setAttribute('d', path(pts));
+    $('line').setAttribute('stroke', down > 0 ? '#FF5C6A' : '#36D399');
+    $('area').setAttribute('d', pts.length > 1 ? `${path(pts)} L${pts[pts.length - 1][0]},620 L0,620 Z` : '');
+    $('area').style.opacity = down > 0 ? 0 : 1;
+    $('pct').textContent = down > 0 ? `${Math.round(840 - 933 * down)}%` : `+${Math.round(up * 840)}%`;
+    $('pct').style.color = down > 0.08 ? 'var(--red)' : 'var(--green)';
+    $('pct').style.opacity = 1 - seg(t, DUMP, DUMP + 0.2);
+    pop($('dump'), t, DUMP, { from: 2.4, d: 0.3 });
+
+    // 2: the replies
+    on($('s2'), t, S.reps, S.q);
+    $('tex2').style.transform = `scale(${1.05 + seg(t, S.reps, S.q) * 0.06})`;
+    $('rh').querySelectorAll('.w').forEach((el, k) => pop(el, t, S.reps + 0.12 + k * 0.1));
+    REPLIES.forEach((_, i) => slide($(`rp${i}`), t, S.reps + (1 + i) * B, { x: i % 2 ? 260 : -260, rot: i % 2 ? 4 : -4 }));
+
+    // 3: the question
+    on($('s3'), t, S.q, S.cards);
+    $('q').querySelectorAll('.w').forEach((el, k) => (el.id === 'rules' ? pop(el, t, S.q + 2 * B, { from: 2.6, d: 0.34, rot: -6 }) : pop(el, t, S.q + 0.1 + k * 0.1)));
+
+    // 4: the six rules
+    CARDS.forEach((c, i) => {
+      const a = S.cards + i * S.CD, el = $(`cd${i}`);
+      on(el, t, a, a + S.CD);
+      el.querySelector('.chip').style.transform = `translateX(${-120 * (1 - back(seg(t, a + 0.05, a + 0.4)))}px)`;
+      el.querySelector('.chip').style.opacity = clamp((t - a) * 5);
+      c.words.forEach((_, k) => pop($(`w${i}_${k}`), t, a + 0.15 + k * 0.11, { from: c.words[k][1] ? 2 : 1.5 }));
+      const v = el.querySelector('.vis');
+      slide(v, t, a + 0.3, { y: 160, d: 0.42 });
+      const p = seg(t, a + 0.55, a + S.CD - 0.45);
+      if (i === 0) {
+        const fee = Math.round(99 - 98 * ease(p));
+        $('fee').textContent = `${fee}%`;
+        $('fee').style.color = fee > 50 ? 'var(--red)' : fee > 10 ? 'var(--accent)' : 'var(--green)';
+        $('feebar').style.width = `${fee}%`;
+        $('feebar').style.background = $('fee').style.color;
+      }
+      if (i === 1 || i === 2) {
+        const at = a + 2 * B, st = $(`st${i}`);
+        const q = seg(t, at, at + 0.26);
+        st.style.opacity = q > 0 ? 1 : 0;
+        st.style.transform = `translateX(-50%) rotate(-8deg) scale(${q > 0 ? 2.6 - 1.6 * back(q) : 2.6})`;
+      }
+      if (i === 3) {
+        [1, 2, 3, 4].forEach((s) => {
+          const fill = Math.floor(clamp(p * 1.6 - (s - 1) * 0.12) * (3 + (s % 2)));
+          $(`sl${s}`).innerHTML = `${Array.from({ length: fill }, (_, k) => `<i style="bottom:${56 + k * 40}px"></i>`).join('')}<span class="n">block ${s}</span>`;
+        });
+        pop($('lk0'), t, a + B, { from: 2, d: 0.3 });
+      }
+      if (i === 4) {
+        const W = 1080 - 160 - 92, cap = 0.62;
+        $('capl').style.left = `${W * cap}px`;
+        const hit = a + 2 * B;
+        [0.55, 0.36].forEach((v2, k) => { const b = $(`b${k}`); b.style.width = `${v2 * cap * ease(clamp(p * 1.6 - k * 0.1)) * 100}%`; b.style.background = 'var(--green)'; });
+        const b2 = $('b2'), run = ease(seg(t, a + 0.6, hit));
+        const bounce = t > hit ? -0.05 * Math.sin(seg(t, hit, hit + 0.4) * Math.PI) : 0;
+        b2.style.width = `${(run * cap + bounce) * 100}%`;
+        b2.style.background = t > hit ? 'var(--red)' : 'var(--green)';
+        $('capt').textContent = t > hit ? 'STOPPED' : '2% cap';
+        $('capt').style.color = t > hit ? 'var(--red)' : 'var(--accent)';
+      }
+      if (i === 5) {
+        $('strike').style.width = `${ease(seg(t, a + 1.5 * B, a + 2 * B)) * 106}%`;
+        pop($('copyt'), t, a + 2 * B, { from: 2.2, d: 0.28, rot: -6 });
+      }
+    });
+
+    // 5: the lock
+    on($('s5'), t, S.lock, S.prod);
+    ['l1', 'l2', 'l3'].forEach((id, k) => slide($(id), t, S.lock + 0.02 + k * B, { x: k % 2 ? 300 : -300 }));
+    const shut = ease(seg(t, S.lock + 3 * B - 0.2, S.lock + 3 * B));
+    $('lockic').style.opacity = clamp((t - S.lock - 0.2) * 4);
+    $('lockic').querySelector('#shackle').setAttribute('transform', `translate(0 ${-3 * (1 - shut)})`);
+    $('lockic').style.transform = `scale(${1 + 0.18 * Math.sin(seg(t, S.lock + 3 * B, S.lock + 3 * B + 0.3) * Math.PI)})`;
+
+    // 6: the product
+    on($('s6'), t, S.prod, S.end);
+    $('ph').style.transform = `scale(${1.02 + seg(t, S.prod, S.end) * 0.1}) translateY(${-seg(t, S.prod, S.end) * 30}px)`;
+    $('pht').querySelectorAll('.w').forEach((el, k) => pop(el, t, S.prod + B + k * B * 0.5));
+
+    // 7: soon
+    on($('end'), t, S.end, 99);
+    pop($('mk'), t, S.end + 0.05, { from: 0.2, d: 0.45, y: -120 });
+    $('end').querySelectorAll('.big .w').forEach((el, k) => pop(el, t, S.end + B + k * B * 0.5));
+    slide($('erow'), t, S.end + 3 * B, { y: 80 });
+    // Soon pulses on the beat
+    const beat = ((t - S.end) / B) % 1;
+    $('soon').style.transform = `scale(${t > S.end + 3.5 * B ? 1 + 0.07 * Math.pow(1 - beat, 3) : 1})`;
+  };
+  window.render(0);
+</script>
+</body></html>

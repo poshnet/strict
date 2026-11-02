@@ -1,0 +1,40 @@
+{
+  "name": "strict",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c green,magenta \"wrangler dev --port 8789\" \"vite --config web/vite.config.ts\"",
+    "dev:api": "wrangler dev --port 8789",
+    "dev:web": "vite --config web/vite.config.ts",
+    "build": "node scripts/source-snippets.mjs && vite build --config web/vite.config.ts",
+    "typecheck": "tsc -p web/tsconfig.json --noEmit",
+    "kols": "node scripts/kols.mjs",
+    "db:local": "wrangler d1 migrations apply strict --local",
+    "db:remote": "wrangler d1 migrations apply strict --remote",
+    "seed:demo": "node scripts/seed-demo.mjs && wrangler d1 execute strict --local --file .wrangler/demo.sql",
+    "program:build": "cd program && cargo-build-sbf --manifest-path programs/strict/Cargo.toml --sbf-out-dir target/deploy",
+    "program:test": "node --experimental-require-module --no-warnings program/tests/run.mjs",
+    "deploy": "npm run build && wrangler d1 migrations apply strict --remote && wrangler deploy",
+    "snippets": "node scripts/source-snippets.mjs"
+  },
+  "dependencies": {
+    "@solana/spl-token": "^0.4.13",
+    "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "@wallet-standard/app": "^1.1.0",
+    "@wallet-standard/base": "^1.1.0",
+    "concurrently": "^9.2.1",
+    "lightweight-charts": "^5.0.9",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "wrangler": "^4.152.0"
+  }
+}
